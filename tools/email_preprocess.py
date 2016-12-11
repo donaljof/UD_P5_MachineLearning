@@ -62,5 +62,6 @@ def preprocess(words_file = "../tools/word_data.pkl", authors_file="../tools/ema
     ### info on the data
     print "no. of Chris training emails:", sum(labels_train)
     print "no. of Sara training emails:", len(labels_train)-sum(labels_train)
-    
+    print "feature size:", len(features_train_transformed)
     return features_train_transformed, features_test_transformed, labels_train, labels_test
+
