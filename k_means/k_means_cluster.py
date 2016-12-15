@@ -8,7 +8,7 @@
 
 
 import pickle
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from sklearn.cluster import KMeans
@@ -78,11 +78,17 @@ plt.show()
 ### cluster here; create predictions of the cluster labels
 ### for the data and store them to a list called pred
 min_max_scaler = preprocessing.MinMaxScaler()
-finance_features = min_max_scaler.fit_transform(finance_features)
+scaler = min_max_scaler.fit(finance_features)
+ff_scaled = scaler.transform(finance_features)
+transform = zip(finance_features, ff_scaled)
 
-kmeans = KMeans(n_clusters=4).fit(finance_features)
+scale_test = np.array([[200000, 1000000]])
+scale_result = scaler.transform(scale_test)
+print 'scale result: ', scale_result
 
-pred = kmeans.predict(finance_features)
+kmeans = KMeans(n_clusters=4).fit(ff_scaled)
+
+pred = kmeans.predict(ff_scaled)
 
 
 
@@ -90,6 +96,6 @@ pred = kmeans.predict(finance_features)
 ### rename the "name" parameter when you change the number of features
 ### so that the figure gets saved to a different file
 try:
-    Draw(pred, finance_features, poi, mark_poi=False, name="clusters.pdf", f1_name=feature_1, f2_name=feature_2)
+    Draw(pred, ff_scaled, poi, mark_poi=False, name="clusters.pdf", f1_name=feature_1, f2_name=feature_2)
 except NameError:
     print "no predictions object named pred found, no clusters to plot"
