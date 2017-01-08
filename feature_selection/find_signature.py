@@ -3,6 +3,8 @@
 import pickle
 import numpy
 numpy.random.seed(42)
+from sklearn import tree
+from sklearn.metrics import accuracy_score
 
 
 ### The words (features) and authors (labels), already largely processed.
@@ -38,6 +40,16 @@ labels_train   = labels_train[:150]
 
 
 ### your code goes here
+clf = tree.DecisionTreeClassifier()
+clf.fit(features_train, labels_train)
+pred = clf.predict(features_test)
 
+print 'accuracy = ', accuracy_score(pred, labels_test)
 
-
+def feature_test(clf):
+    for i in range(clf.n_features_):
+        importances =  clf.feature_importances_[i]
+        if importances >= 0.2:
+            return i, importances
+        
+print feature_test(clf)
