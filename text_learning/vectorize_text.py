@@ -46,7 +46,7 @@ for name, from_person in [("sara", from_sara), ("chris", from_chris)]:
         #temp_counter += 1
         if temp_counter < 5:
             path = path[:-2] + "_"
-            path = os.path.join('...', path) 
+            path = os.path.join('../..', path) 
             #path = 'C:/Users/Donal/Documents/Udacity Docs/UD_P5_MachineLearning/maildir/bailey-s/deleted_items/101_'
                    
             email = open(path, "r")
@@ -55,7 +55,7 @@ for name, from_person in [("sara", from_sara), ("chris", from_chris)]:
             text = parseOutText(email)
             ### use str.replace() to remove any instances of the words
             ### 
-            key_words = ["sara", "shackleton", "chris", "germani"]
+            key_words = ["sara", "shackleton", "chris", "germani" , "sshacklensf", "cgermannsf"]
             for kword in key_words:
                 text = text.replace(kword, '')
         

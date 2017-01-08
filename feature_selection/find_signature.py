@@ -47,9 +47,11 @@ pred = clf.predict(features_test)
 print 'accuracy = ', accuracy_score(pred, labels_test)
 
 def feature_test(clf):
+    importance_dict = {}
     for i in range(clf.n_features_):
         importances =  clf.feature_importances_[i]
         if importances >= 0.2:
-            return i, importances
+            importance_dict[i] = importances
+    return importance_dict
         
 print feature_test(clf)
