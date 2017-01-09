@@ -93,4 +93,4 @@ vectorizer = TfidfVectorizer(stop_words='english', lowercase = True)
 
 vectorizer.fit_transform(word_data)
 
-print vectorizer.get_feature_names()[34597]
+print vectorizer.get_feature_names()[21323]
