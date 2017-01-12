@@ -10,21 +10,60 @@ from tester import dump_classifier_and_data
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
-features_list = ['poi','salary'] # You will need to use more features
+
+#Creating a simple first pass at POI identifier with a few hand picked features.
+features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses'] # You will need to use more features
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
-    print data_dict.keys[0]
-
+    
 ### Task 2: Remove outliers
+
+#Deleting most obvious outlier  - TOTAL
+exclude_persons = ['TOTAL']
+
+for name in data_dict.keys():
+    if name in exclude_persons:
+        del data_dict[name]
+        print 'deleted: ', name
+    else:
+        pass
+
+
 ### Task 3: Create new feature(s)
 ### Store to my_dataset for easy export below.
 my_dataset = data_dict
 
 ### Extract features and labels from dataset for local testing
-data = featureFormat(my_dataset, features_list, sort_keys = True)
-labels, features = targetFeatureSplit(data)
+data_all = featureFormat(my_dataset, features_list, sort_keys = True,\
+remove_NaN=False, remove_all_zeroes=False, remove_any_zeroes=False)
+print 'all data: ', len(data_all)
+
+data_noNaN = featureFormat(my_dataset, features_list, sort_keys = True,\
+remove_NaN=True, remove_all_zeroes=False, remove_any_zeroes=False)
+print 'No NaN data: ', len(data_noNaN)
+data_noZero = featureFormat(my_dataset, features_list, sort_keys = True,\
+remove_NaN=False, remove_all_zeroes=True, remove_any_zeroes=False)
+print 'no 0s data: ', len(data_noZero)
+data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
+remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
+print 'no 0s or NaN data: ', len(data_noNaNnoZero)
+
+count = 0
+for name in data_dict.keys():    
+    all_zeros = True
+    for item in data_dict[name]:      
+        if data_dict[name][item] != 0 and data_dict[name][item] != "NaN":
+            all_zeros = False
+            count += 1
+            break
+    if all_zeros:
+        print name
+        print data_dict[name]
+print count
+
+labels, features = targetFeatureSplit(data_noNaNnoZero)
 
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
