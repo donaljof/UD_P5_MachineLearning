@@ -6,6 +6,10 @@ sys.path.append("../tools/")
 
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
+from sklearn.cross_validation import train_test_split
+from time import time
+from sklearn.metrics import accuracy_score
+
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -60,7 +64,7 @@ for name in data_dict.keys():
             break
     if all_zeros:
         print name
-        print data_dict[name]
+        #print data_dict[name]
 print count
 
 labels, features = targetFeatureSplit(data_noNaNnoZero)
@@ -83,9 +87,17 @@ clf = GaussianNB()
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
 # Example starting point. Try investigating other evaluation techniques!
-from sklearn.cross_validation import train_test_split
 features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels, test_size=0.3, random_state=42)
+
+t0 = time()
+clf.fit(features_train, labels_train)
+print "Classifier Fit Time =  % secs" % (time() - t0)
+t0 = time()
+pred = clf.predict(features_test)
+print "Classifier Predict Time =  % secs" % (time() - t0)
+
+print 'Classifier Accurcacy = ', accuracy_score(labels_test, pred)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
