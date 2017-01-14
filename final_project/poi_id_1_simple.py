@@ -101,10 +101,10 @@ features_train, features_test, labels_train, labels_test = \
 
 t0 = time()
 clf.fit(features_train, labels_train)
-print "Classifier Fit Time =  % s" % round((time() - t0), 3)
+print "Classifier Fit Time = ", round((time() - t0), 3)
 t0 = time()
 pred = clf.predict(features_test)
-print "Classifier Predict Time =  % s" % round((time() - t0))
+print "Classifier Predict Time = ",round((time() - t0), 3)
 
 #Classifier Metrics:
 print 'Classifier Accurcacy = ', accuracy_score(labels_test, pred)
