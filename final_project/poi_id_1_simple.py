@@ -101,16 +101,53 @@ features_train, features_test, labels_train, labels_test = \
 
 t0 = time()
 clf.fit(features_train, labels_train)
-print "Classifier Fit Time = ", round((time() - t0), 3)
+fit_time = round((time() - t0), 4)
+print "Classifier Fit Time = ", fit_time
 t0 = time()
 pred = clf.predict(features_test)
-print "Classifier Predict Time = ",round((time() - t0), 3)
+pred_time = round((time() - t0), 4)
+print "Classifier Predict Time = ",pred_time
 
+#Custom totally pointless metric
+def true_positive_p(test, pred):
+    label_tuple = zip(pred, test)
+    tn = 0.0
+    tp = 0.0
+    fp = 0.0
+    fn = 0.0
+    n = len(label_tuple)
+    for i in label_tuple:
+        if sum(i) == 0:
+            tn += 1
+        elif sum(i) == 2:
+            tp += 1
+        else:
+            if i[0] == 1:
+                fp += 1
+            elif i[1] == 1:
+                fn += 1
+    precision =  tp / (tp + fp) # testing loop above produces correct result
+    t_pos = ((tp + tn)/(tp + fp))*(tp/(tp + tn)) #eh, same as above!?
+    f_pos = fp / (fn + fp) # eh, same as Recall though not identical - unsure if unique.
+    return f_pos
+    
+#Custom scoring system that penalizes very slow classifiers.
+#No real mathematical justificaion for this formula, simply arithmetic mean of
+#f score and a bothed together speed function. Expodential not chosen for any
+#scientific reason, just wanted to return 1 if time = 0!
+def Grand_Prix(test, pred, speed_weight = 0.5):
+    f1 =  f1_score(test, pred)
+    speed = speed_weight/(np.exp(1000*(fit_time + pred_time)))
+    result = (f1 + speed)/2
+    return result
+    
 #Classifier Metrics:
 print 'Classifier Accurcacy = ', accuracy_score(labels_test, pred)
 print 'Classifier Precision = ', precision_score(labels_test, pred)
 print 'Classifier Recall = ', recall_score(labels_test, pred)
+print 'Classifier False Positive Rate = ', true_positive_p(labels_test, pred)
 print 'Classifier F1 Score = ', f1_score(labels_test, pred)
+print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
