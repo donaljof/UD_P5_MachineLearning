@@ -23,9 +23,18 @@ Multiple steps in the learning process and alternative classifiers have been sav
 # Data Features and Selection
 ---
 
+Initially no feature selection was completed and all possible features were included in the dataset to explore which may be usefull or need to be discarded. Running the code on a 
+simple classifer generated a ValueError due to emails stored as string not convertable into floats as part of featureFormat. As the email address is unlikely to be valuable in identifying
+POI's this feature was excluded for simplicity.
+
+For a simple check of the features provided the a feature_checker function was defined to loop through all features and count the number of non zero / non NaN item. 
+The feature 'loan_advances' provides 3 useful results with 2 non-poi. Based on this the Loan Advances feature is unlikey to be a useful at identifying POI's and was removed.
+
 
 # Outlier Removal
 ---
+
+
 
 # Classifiers
 ---
