@@ -26,7 +26,7 @@ with open("final_project_dataset.pkl", "r") as data_file:
 ### Task 2: Remove outliers
 
 #Deleting most obvious outlier  - TOTAL
-exclude_persons = ['TOTAL']
+exclude_persons =  ['TOTAL'] #,'LOCKHART EUGENE E', 'THE TRAVEL AGENCY IN THE PARK']
 
 for name in data_dict.keys():
     if name in exclude_persons:

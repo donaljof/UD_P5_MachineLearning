@@ -36,7 +36,6 @@ for f in dud_features:
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
- 
     
 ### Task 2: Remove outliers
 
@@ -108,71 +107,9 @@ my_dataset = data_dict
 
 data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
 remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
-print 'no 0s or NaN data: ', len(data_noNaNnoZero)
 
 my_dataset = data_noNaNnoZero
 
-    
-# Check each name in the data_dict for all 0 / NaN values and return count of non-zeros
-#returns dict of each data point (person) with at least on non=0 feature and value
-#of total non zero features 
-def key_checker(data_dict):
-    valid_dict = {}
-    for name in data_dict.keys():
-        valid_count = 0
-        all_zeros = True
-        for item in data_dict[name]:      
-            if data_dict[name][item] != 0 and data_dict[name][item] != "NaN":
-                all_zeros = False
-                valid_count += 1
-        valid_dict[name] = valid_count
-    
-        if all_zeros:
-            print 'all zeros: ',name
-            #print data_dict[name]
-    return valid_dict
-
-#check each of the features number of non zero results
-#returns dict of each feature with total non zero features 
-def feature_checker(data_dict, features_list):
-    feature_dict = {}
-    for feature in features_list:
-        non_zero_count = 0
-        empty_feature = True
-        for name in data_dict:
-            if data_dict[name][feature] != 0 and data_dict[name][feature] != "NaN":
-                empty_feature = False
-                non_zero_count += 1
-        feature_dict[feature] = non_zero_count
-        if empty_feature:
-            print 'empty feature: ', feature
-    return feature_dict
-key_check_dict = key_checker(data_dict)
-
-print key_check_dict # printing key useful feature counts
-print feature_checker(data_dict, features_list), len( feature_checker(data_dict, features_list))
-
-#with only 2 valid featues and a decidedly unhuman name,
-#THE TRAVEL AGENCY IN THE PARK is likely not a POI
-'''
-for name in key_check_dict.keys():
-    if key_check_dict[name] <= 10:
-        print name, key_check_dict[name]
-print feature_checker(data_dict, features_list)
-'''
-#Not clear what other is but it produced 93 valid results, 
-#will see if removing later improves classifier
-'''
-for name in data_dict.keys():
-    print data_dict[name]['other']
-'''
-#Loan advances returns only 3 data points - 1 poi
-#Not likely to be useful predictor - scrubbed.
-'''
-for name in data_dict.keys():
-    print data_dict[name]['loan_advances'], name, data_dict[name]['poi']
-'''
-    
 labels, features = targetFeatureSplit(my_dataset)
 
 #how many poi in my_dataset?:

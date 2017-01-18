@@ -26,9 +26,10 @@ email_features = ['to_messages', 'from_poi_to_this_person', \
 'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi']
 
 
-#Creating a simple first pass at POI identifier with a few hand picked features.
-features_list = ['poi'] + financial_features + email_features # You will need to use more features
+#Initial feature list to include all features/
+features_list = ['poi'] + financial_features + email_features 
 
+#culling non-usefull features
 dud_features = ['loan_advances']
 for f in dud_features:
     features_list.remove(f)
@@ -42,9 +43,9 @@ with open("final_project_dataset.pkl", "r") as data_file:
 
 #Deleting most obvious outlier  - TOTAL
 #Post exploration below Eugene Lockhart has no usefull data
-exclude_persons = ['TOTAL','LOCKHART EUGENE E', 'THE TRAVEL AGENCY IN THE PARK']
+exclude_persons =  ['TOTAL','LOCKHART EUGENE E', 'THE TRAVEL AGENCY IN THE PARK']
 
-#Loop to remove persions specified above
+#Loop to remove persons specified above
 for name in data_dict.keys():
     if name in exclude_persons:
         del data_dict[name]
@@ -53,55 +54,7 @@ for name in data_dict.keys():
         pass
 
 ### Task 3: Create new feature(s)
-
-##New Feature creation:
-#Completing before featureFormat to avoit dealing with labeless arrays
-
-#exercised_stock_ratio = Fraction of excercised from total unrestricted stock
-#stock available to excersise (not fully sure if deferred restircted stock should alse be subtracted)
-#to_poi_email_fraction = Fraction of emails sent that were to  poi
-#from_poi_email_fraction = Fraction of email recived that were froma poi
-#total_bonus_compensation = Combined bonus, fees, expenses and otehr benifits that are
-#not part of base salary. Other may belong in her but unsure.
-#salary_fraction_total_bonus = above as fraction of salary (this may be > 1 )
-#Most likely a far less messy way of doing this but below currently works without issues
-new_features = ['exercised_stock_ratio','to_poi_email_fraction','from_poi_email_fraction', \
-                'total_bonus_compensation','salary_fraction_total_bonus']
-def feature_adder(data_dict):
-    for name in data_dict.keys():
-        d = data_dict[name]
-        #change NaN to 0 (wish I tried arrays now)
-        for ft in d.keys():
-            if d[ft] == 'NaN':
-                d[ft] = 0.0
-        #if statment to prevent div 0
-        if (d['total_stock_value'] - d['restricted_stock']) == 0:
-            d['exercised_stock_ratio'] = 0.0
-        else:
-            d['exercised_stock_ratio'] = d['exercised_stock_options'] / (d['total_stock_value'] - d['restricted_stock'] )
-        if d['from_messages'] == 0:
-            d['to_poi_email_fraction'] = 0.0
-        else:
-            d['to_poi_email_fraction'] = d['from_this_person_to_poi'] / d['from_messages']
-        if  d['to_messages'] == 0:
-            d['from_poi_email_fraction'] = 0.0
-        else:
-            d['from_poi_email_fraction'] = d['from_poi_to_this_person'] / d['to_messages']
-        d['total_bonus_compensation'] = d['deferral_payments'] + d['bonus'] + d['director_fees'] \
-+ d['expenses'] + d['deferred_income'] + d['long_term_incentive']
-        if d['salary'] == 0:
-            d['salary_fraction_total_bonus'] = 0.0
-        else:
-            d['salary_fraction_total_bonus'] = d['total_bonus_compensation'] / d['salary']
-       
-    return data_dict
-
-#update data_dict as per above and add new features to feature list
-data_dict = feature_adder(data_dict)
-features_list = features_list + new_features
-
 ### Store to my_dataset for easy export below.
-
 my_dataset = data_dict
 
 ### Extract features and labels from dataset for local testing
@@ -112,7 +65,6 @@ print 'no 0s or NaN data: ', len(data_noNaNnoZero)
 
 my_dataset = data_noNaNnoZero
 
-    
 # Check each name in the data_dict for all 0 / NaN values and return count of non-zeros
 #returns dict of each data point (person) with at least on non=0 feature and value
 #of total non zero features 
@@ -154,24 +106,24 @@ print feature_checker(data_dict, features_list), len( feature_checker(data_dict,
 
 #with only 2 valid featues and a decidedly unhuman name,
 #THE TRAVEL AGENCY IN THE PARK is likely not a POI
-'''
+
 for name in key_check_dict.keys():
     if key_check_dict[name] <= 10:
         print name, key_check_dict[name]
 print feature_checker(data_dict, features_list)
-'''
+
 #Not clear what other is but it produced 93 valid results, 
 #will see if removing later improves classifier
-'''
+
 for name in data_dict.keys():
     print data_dict[name]['other']
-'''
+
 #Loan advances returns only 3 data points - 1 poi
 #Not likely to be useful predictor - scrubbed.
-'''
+
 for name in data_dict.keys():
     print data_dict[name]['loan_advances'], name, data_dict[name]['poi']
-'''
+
     
 labels, features = targetFeatureSplit(my_dataset)
 
