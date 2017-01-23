@@ -9,8 +9,10 @@ from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.cross_validation import train_test_split
 from time import time
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
+from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
+from sklearn import decomposition
+from sklearn.pipeline import make_pipeline
+from sklearn.grid_search import GridSearchCV
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -32,7 +34,6 @@ features_list = ['poi'] + financial_features + email_features # You will need to
 dud_features = ['loan_advances']
 for f in dud_features:
     features_list.remove(f)
-
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
@@ -114,14 +115,34 @@ labels, features = targetFeatureSplit(my_dataset)
 
 #how many poi in my_dataset?:
 print 'my_dataset size = ', len(my_dataset)
-print 'poi = ' ,  np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
-print 'No of features = ', len(features_list)
+feature_count = np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
+print 'poi = ' ,  feature_count
+
+
 
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
 ### Note that if you want to do PCA or other multi-stage operations,
 ### you'll need to use Pipelines. For more info:
 ### http://scikit-learn.org/stable/modules/pipeline.html
+
+# Example starting point. Try investigating other evaluation techniques!
+# Moving aboce PCA to fit.
+features_train, features_test, labels_train, labels_test = \
+    train_test_split(features, labels, test_size=0.3, random_state=42)
+
+#Feature reduction step of pipeline
+#Start with example PCA from eigenfaces
+pca = decomposition.PCA()
+
+# pca explorations
+pca.fit(features_train)
+pca_components =  pca.components_
+print 'No of Features = ', pca.n_components_
+
+for c in range(pca.n_components_):
+    print c,' explained var =  ', pca.explained_variance_ratio_[c]
+
 
 # Provided to give you a starting point. Try a variety of classifiers.
 from sklearn.naive_bayes import GaussianNB
@@ -134,10 +155,8 @@ clf = GaussianNB()
 ### stratified shuffle split cross validation. For more info: 
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-# Example starting point. Try investigating other evaluation techniques!
-features_train, features_test, labels_train, labels_test = \
-    train_test_split(features, labels, test_size=0.3, random_state=42)
 
+'''Not using in this iteration
 t0 = time()
 clf.fit(features_train, labels_train)
 fit_time = round((time() - t0), 4)
@@ -146,7 +165,26 @@ t0 = time()
 pred = clf.predict(features_test)
 pred_time = round((time() - t0), 4)
 print "Classifier Predict Time = ",pred_time
+'''
 
+# pipe parameters 
+n_components = [1,2,3,4,5,10,15]
+
+#### Pipeline:
+t0 = time()
+pipe = make_pipeline(pca, clf)
+
+estimator = GridSearchCV(pipe, dict(pca__n_components=n_components))
+
+estimator.fit(features_train, labels_train)
+
+print 'Best Est = ', estimator.best_estimator_
+
+pipe_time = round((time() - t0), 4)
+print "Total Pipeline Time = ", pipe_time
+
+pred = estimator.predict(features_test)
+print classification_report(labels_test, pred, target_names=["Non-POI", "POI"])
 #Custom slightly pointless metric 
 def true_positive_p(test, pred):
     label_tuple = zip(pred, test)
