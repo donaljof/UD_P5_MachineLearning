@@ -14,6 +14,7 @@ from sklearn import decomposition
 from sklearn.pipeline import make_pipeline
 from sklearn.grid_search import GridSearchCV
 
+
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
 ### The first feature must be "poi".
@@ -140,13 +141,20 @@ pca.fit(features_train)
 pca_components =  pca.components_
 print 'No of Features = ', pca.n_components_
 
+var_no = 5
 for c in range(pca.n_components_):
-    print c,' explained var =  ', pca.explained_variance_ratio_[c]
+    if c < var_no:
+        print c + 1,' explained var =  ', pca.explained_variance_ratio_[c]
+
+
 
 
 # Provided to give you a starting point. Try a variety of classifiers.
-from sklearn.naive_bayes import GaussianNB
-clf = GaussianNB()
+
+#using Support Vector Machines
+from sklearn import svm
+
+clf = svm.SVC()
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -155,27 +163,17 @@ clf = GaussianNB()
 ### stratified shuffle split cross validation. For more info: 
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-
-'''Not using in this iteration
-t0 = time()
-clf.fit(features_train, labels_train)
-fit_time = round((time() - t0), 4)
-print "Classifier Fit Time = ", fit_time
-t0 = time()
-pred = clf.predict(features_test)
-pred_time = round((time() - t0), 4)
-print "Classifier Predict Time = ",pred_time
-'''
-
 # pipe parameters 
 n_components = [1,2,3,4,5,10,15]
+kernal_types = ['linear', 'poly', 'rbf']
 
 #### Pipeline:
 t0 = time()
 pipe = make_pipeline(pca, clf)
 
-estimator = GridSearchCV(pipe, dict(pca__n_components=n_components))
+estimator = GridSearchCV(pipe, dict(pca__n_components=n_components, svc__kernel=kernal_types))
 
+print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
 
 print 'Best Est = ', estimator.best_estimator_
