@@ -145,7 +145,10 @@ pca = decomposition.PCA()
 from sklearn.ensemble import RandomForestClassifier
 
 clf = RandomForestClassifier()
-
+'''
+clf.fit(features_train, labels_train)
+pred = clf.predict(features_test)
+'''   ##Checking grid PCA etc vs oob##
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
 ### folder for details on the evaluation method, especially the test_classifier
@@ -154,16 +157,19 @@ clf = RandomForestClassifier()
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
 # pipe parameters 
-n_estimators  = [1,2,5,10,20,50,100]
-m_ft = [0.1,0.5,0.7,0.8,0.9, 1]
-n_jobs= [1,2,3,5]
+n_components = [1,2,5,10,15]
+n_estimators  = [1,2,5,10]
+m_ft = [0.1,0.15,0.2,0.3,0.4,0.5,0.7]
+m_split = [2,3,4,6,10,12]
+n_jobs= [5]
 #### Pipeline:
 t0 = time()
-pipe = make_pipeline(pca, clf)
-estimator = GridSearchCV(pipe, dict(pca__n_components=n_components,
-                                    randomforestclassifier__n_estimators=n_estimators,
+pipe = make_pipeline(clf)
+#pca__n_components=n_components,
+estimator = GridSearchCV(pipe, dict(randomforestclassifier__n_estimators=n_estimators,
                                     randomforestclassifier__max_features=m_ft,
-                                    randomforestclassifier__n_jobs=n_jobs))
+                                    randomforestclassifier__n_jobs=n_jobs,
+                                    randomforestclassifier__min_samples_split=m_split))
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
@@ -176,6 +182,8 @@ print "\n Total Pipeline Time = ", pipe_time , "\n"
 pred = estimator.predict(features_test)
 print classification_report(labels_test, pred, target_names=["Non-POI", "POI"])
 print pred
+
+#'''###################end cut off  for Grid
 
 #Custom slightly pointless metric 
 def true_positive_p(test, pred):
