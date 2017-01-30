@@ -70,6 +70,15 @@ this benifit coming from the removal of 'TOTALS'
 ---
 ### Nieve Bayes
 
+OOB Nieve Bayes
+Classifier Fit Time =  0.0
+Classifier Predict Time =  0.0
+Classifier Accurcacy =  0.857142857143
+Classifier Precision =  0.5
+Classifier Recall =  0.666666666667
+Classifier False Positive Rate =  0.666666666667
+Classifier F1 Score =  0.571428571429
+Speed Weighted F1 Score =  0.535714285714
 
 ### Support Vector Machines
 Linear support vector machines was applied using a pipline containing the PCA and tuned over the number of components, C values, tolerence values, maximum iterations and intercept scaling.
@@ -105,6 +114,69 @@ Speed Weighted F1 Score =  0.4
 avg / total       0.80      0.63      0.69        43
 
 Initial Classifier 
+
+### Decision Trees
+
+Out of Box
+Classifier Accurcacy =  0.906976744186
+Classifier Precision =  1.0
+Classifier Recall =  0.2
+Classifier False Positive Prob =  0.0
+Classifier F1 Score =  0.333333333333
+Speed Weighted F1 Score =  0.333333333333
+
+With PCA
+Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=10, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features=0.2, max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=5,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False))])
+
+ Total Pipeline Time =  649.205 
+
+             precision    recall  f1-score   support
+
+    Non-POI       0.92      0.92      0.92        38
+        POI       0.40      0.40      0.40         5
+
+avg / total       0.86      0.86      0.86        43
+
+[ 0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  1.  0.  0.
+  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  1.  0.  0.  0.  0.  0.  1.]
+Classifier Accurcacy =  0.860465116279
+Classifier Precision =  0.4
+Classifier Recall =  0.4
+Classifier False Positive Prob =  0.5
+Classifier F1 Score =  0.4
+Speed Weighted F1 Score =  0.4
+
+With PCA removed
+Best Est =  Pipeline(steps=[('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features=0.1, max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=5,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False))])
+
+ Total Pipeline Time =  128.413 
+
+             precision    recall  f1-score   support
+
+    Non-POI       0.93      1.00      0.96        38
+        POI       1.00      0.40      0.57         5
+
+avg / total       0.94      0.93      0.92        43
+
+Classifier Accurcacy =  0.93023255814
+Classifier Precision =  1.0
+Classifier Recall =  0.4
+Classifier False Positive Prob =  0.0
+Classifier F1 Score =  0.571428571429
+Speed Weighted F1 Score =  0.571428571429
+
+
 
 # Classifier Tuning
 ---
