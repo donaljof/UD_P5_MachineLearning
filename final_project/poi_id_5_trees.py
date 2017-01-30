@@ -103,9 +103,6 @@ def feature_adder(data_dict):
 data_dict = feature_adder(data_dict)
 features_list = features_list + new_features
 
-#short featue list for debugging svm
-#features_list = ['poi'] + new_features
-
 ### Store to my_dataset for easy export below.
 
 my_dataset = data_dict
@@ -124,8 +121,6 @@ print 'my_dataset size = ', len(my_dataset)
 feature_count = np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
 print 'poi = ' ,  feature_count
 
-
-
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
 ### Note that if you want to do PCA or other multi-stage operations,
@@ -141,26 +136,15 @@ features_train, features_test, labels_train, labels_test = \
 #Start with example PCA from eigenfaces
 pca = decomposition.PCA()
 
-# pca explorations
-'''
-pca.fit(features_train)
-pca_components =  pca.components_
-print 'No of Features = ', pca.n_components_
-
-var_no = 5
-for c in range(pca.n_components_):
-    if c < var_no:
-        print c + 1,' explained var =  ', pca.explained_variance_ratio_[c]
-'''
 #scaling data using statndardization scaler
 #skl = StandardScaler()
 
 # Provided to give you a starting point. Try a variety of classifiers.
 
 #using Support Vector Machines
-from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 
-clf = svm.SVC()
+clf = RandomForestClassifier()
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -170,14 +154,16 @@ clf = svm.SVC()
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
 # pipe parameters 
-n_components = [1,2,3,4]
-
-
+n_estimators  = [1,2,5,10,20,50,100]
+m_ft = [0.1,0.5,0.7,0.8,0.9, 1]
+n_jobs= [1,2,3,5]
 #### Pipeline:
 t0 = time()
 pipe = make_pipeline(pca, clf)
-
-estimator = GridSearchCV(pipe, dict(pca__n_components=n_components))
+estimator = GridSearchCV(pipe, dict(pca__n_components=n_components,
+                                    randomforestclassifier__n_estimators=n_estimators,
+                                    randomforestclassifier__max_features=m_ft,
+                                    randomforestclassifier__n_jobs=n_jobs))
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
@@ -191,16 +177,6 @@ pred = estimator.predict(features_test)
 print classification_report(labels_test, pred, target_names=["Non-POI", "POI"])
 print pred
 
-###basic version still looks rubbish
-'''
-clf = svm.SVC(C = 100, kernel = 'poly')
-
-clf.fit(features_train, labels_train)
-pred = clf.predict(features_test)
-print pred
-#Classifier F1 Score =  0.111111111111
-#Driven by high false POI identification
-'''
 #Custom slightly pointless metric 
 def true_positive_p(test, pred):
     label_tuple = zip(pred, test)
