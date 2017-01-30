@@ -159,7 +159,7 @@ for c in range(pca.n_components_):
 #using Support Vector Machines
 from sklearn import svm
 
-clf = svm.LinearSVC()
+clf = svm.SVC()
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -170,11 +170,8 @@ clf = svm.LinearSVC()
 
 # pipe parameters 
 n_components = [1,2,3,4]
-C_values = [40000, 50000,60000,70000]
-tol_values = [0.0001,0.00008, 0.00005,0.00003]
-iter_values = [10,100,1000,10000]
-ic_scl= [1,2,3,4,5]
-
+C_values = [0.001, 0.01, 0.1, 1,10,100,1000,10000,100000]
+g_values=[0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,100000]
 
 
 #### Pipeline:
@@ -182,10 +179,8 @@ t0 = time()
 pipe = make_pipeline(pca, clf)
 
 estimator = GridSearchCV(pipe, dict(pca__n_components=n_components,
-                                    linearsvc__C=C_values,
-                                    linearsvc__tol=tol_values,
-                                    linearsvc__max_iter=iter_values,
-                                    linearsvc__intercept_scaling=ic_scl))
+                                    svc__C=C_values,
+                                    svc__gamma=g_values))
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)

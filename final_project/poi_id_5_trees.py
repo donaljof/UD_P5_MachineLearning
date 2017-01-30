@@ -13,7 +13,6 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_sco
 from sklearn import decomposition
 from sklearn.pipeline import make_pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn.preprocessing import StandardScaler
 
 
 ### Task 1: Select what features you'll use.
@@ -66,6 +65,8 @@ for name in data_dict.keys():
 #total_bonus_compensation = Combined bonus, fees, expenses and otehr benifits that are
 #not part of base salary. Other may belong in her but unsure.
 #salary_fraction_total_bonus = above as fraction of salary (this may be > 1 )
+
+
 #Most likely a far less messy way of doing this but below currently works without issues
 new_features = ['exercised_stock_ratio','to_poi_email_fraction','from_poi_email_fraction', \
                 'total_bonus_compensation','salary_fraction_total_bonus']
@@ -159,7 +160,7 @@ for c in range(pca.n_components_):
 #using Support Vector Machines
 from sklearn import svm
 
-clf = svm.LinearSVC()
+clf = svm.SVC()
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
@@ -170,22 +171,13 @@ clf = svm.LinearSVC()
 
 # pipe parameters 
 n_components = [1,2,3,4]
-C_values = [40000, 50000,60000,70000]
-tol_values = [0.0001,0.00008, 0.00005,0.00003]
-iter_values = [10,100,1000,10000]
-ic_scl= [1,2,3,4,5]
-
 
 
 #### Pipeline:
 t0 = time()
 pipe = make_pipeline(pca, clf)
 
-estimator = GridSearchCV(pipe, dict(pca__n_components=n_components,
-                                    linearsvc__C=C_values,
-                                    linearsvc__tol=tol_values,
-                                    linearsvc__max_iter=iter_values,
-                                    linearsvc__intercept_scaling=ic_scl))
+estimator = GridSearchCV(pipe, dict(pca__n_components=n_components))
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
