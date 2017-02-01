@@ -56,7 +56,7 @@ from the data set based on their explained variance:
 From this we can see the first component accounts for the vast majority of variance in the dataset post transformation and the number of potentially useful dimensions reduced to more managable number.
 
 Sclaing of features was added at a later stage in the project process and included as the first step in the pipleine but no noticible improvement in performance was see, possibly due to the 
-inclusion of ratio based features added to teh feature set that were then included in the PCA.
+inclusion of ratio based features added to the feature set that were then included in the PCA.
 
 # Outlier Removal
 ---
@@ -83,7 +83,11 @@ Classifier F1 Score =  0.571428571429
 Speed Weighted F1 Score =  0.535714285714
 
 ### Support Vector Machines
-Linear support vector machines was applied using a pipline containing the PCA and tuned over the number of components, C values, tolerence values, maximum iterations and intercept scaling.
+
+Support Vector Machines were selected intially for their usefullness in dealing with high dimensionality data, speed in their linear form and low complexity relative to ensemble methods.
+It was hoped the large number of numeric features would suit the plane splitting strategy employed by SVM and yield a useful prediction. 
+
+Linear support vector machines alghorith was applied using a pipline containing the PCA and tuned over the number of components, C values, tolerence values, maximum iterations and intercept scaling.
 
 Achieving a best case F1 score as per the output below proved challenging from a tuning point of view. Large numbers of components or tuning parameters outside a narrow range gave recall values of less than 0.1.
 
@@ -95,33 +99,33 @@ Multiple attempts were made to create a SVM classifier using the RBF kernal but 
 The difficulties in tuning this algorithm and the poor results achieved resulted in it being abandoned for futher explorations. Intuition would suggest that removing PCA from the pipeline would reduce the efffectivness of SVM due to the increased number of hyperplanes divisions needed but changing the 
 method of feature reduction may be useful. The scaling of the features used may also have been an issue though PCA and the creation of ratio based features should have alleviated this. 
 
-Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=3, whiten=False)), ('linearsvc', LinearSVC(C=60000, class_weight=None, dual=True, fit_intercept=True,
-     intercept_scaling=3, loss='squared_hinge', max_iter=10000,
-     multi_class='ovr', penalty='l2', random_state=None, tol=1e-05,
+Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=3, whiten=False)), ('linearsvc', LinearSVC(C=50000, class_weight=None, dual=True, fit_intercept=True,
+     intercept_scaling=1, loss='squared_hinge', max_iter=10000,
+     multi_class='ovr', penalty='l2', random_state=None, tol=8e-05,
      verbose=0))])
 
- Total Pipeline Time =  67.779 
+ Total Pipeline Time =  44.46 
 
              precision    recall  f1-score   support
 
-    Non-POI       0.94      0.82      0.87        38
-        POI       0.30      0.60      0.40         5
+    Non-POI       0.93      0.74      0.82        38
+        POI       0.23      0.60      0.33         5
 
-avg / total       0.87      0.79      0.82        43
+avg / total       0.85      0.72      0.77        43
 
-Classifier Accurcacy =  0.790697674419
-Classifier Precision =  0.3
+Classifier Accurcacy =  0.720930232558
+Classifier Precision =  0.230769230769
 Classifier Recall =  0.6
-Classifier False Positive Prob =  0.777777777778
-Classifier F1 Score =  0.4
-Speed Weighted F1 Score =  0.4
-avg / total       0.80      0.63      0.69        43
+Classifier False Positive Prob =  0.833333333333
+Classifier F1 Score =  0.333333333333
+Speed Weighted F1 Score =  0.333333333333
 
 
 ### Decision Trees
 
 
-Out of Box
+
+Out of Box:
 Classifier Accurcacy =  0.906976744186
 Classifier Precision =  1.0
 Classifier Recall =  0.2
@@ -129,7 +133,12 @@ Classifier False Positive Prob =  0.0
 Classifier F1 Score =  0.333333333333
 Speed Weighted F1 Score =  0.333333333333
 
-With PCA
+With PCA and GridselctCV looping over possible values for 'n_components', 'n_estimators', 'max_features', 'min_samples_leaf' and 'max_depth'. Unlike previous classifers above, the mistake in the
+Speed Weighted F1 Score was fixed and it is giving a reduced F1 score for this slower alghorith (subjective measure but sclaled to penalize when the metric creator is getting impatient).
+
+Annoyingly, due to the random nature of the Random Forest Classifier the high score below is not repeatabe. Running tester code on below produced an abismal 
+
+
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=15, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
             max_depth=5, max_features=0.08, max_leaf_nodes=None,
             min_samples_leaf=1, min_samples_split=2,
@@ -160,6 +169,20 @@ Speed Weighted F1 Score =  0.464092184753
 
 # Classifier Tuning
 ---
+
+Though many of the machine learning classifiers featured have some predictive value out of the box, maximizing their effectiveness can be achieved by tuning the key parameters used.
+
+For tuning of the classifers, GridselctCV was used to try a range of possible tuning parameters and select the best possible classifier.
+
+Cross validation was also included as part of the GridSelectCV 
+
+SVM grid:
+n_components = [1,2,3,4]
+C_values = [40000, 50000,60000,70000]
+tol_values = [0.0001,0.00008, 0.00005,0.00003]
+iter_values = [10,100,1000,10000]
+ic_scl= [1,2,3,4,5]
+
 
 # Classifier Metrics
 ---
