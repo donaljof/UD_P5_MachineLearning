@@ -11,8 +11,10 @@ from sklearn.cross_validation import train_test_split
 from time import time
 from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
 from sklearn import decomposition
+from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.grid_search import GridSearchCV
+#from sklearn.feature_selection import SelectKBest
 
 
 ### Task 1: Select what features you'll use.
@@ -81,21 +83,26 @@ def feature_adder(data_dict):
         if (d['total_stock_value'] - d['restricted_stock']) == 0:
             d['exercised_stock_ratio'] = 0.0
         else:
-            d['exercised_stock_ratio'] = d['exercised_stock_options'] / (d['total_stock_value'] - d['restricted_stock'] )
+            d['exercised_stock_ratio'] = d['exercised_stock_options'] / (d[
+            'total_stock_value'] - d['restricted_stock'] )
         if d['from_messages'] == 0:
             d['to_poi_email_fraction'] = 0.0
         else:
-            d['to_poi_email_fraction'] = d['from_this_person_to_poi'] / d['from_messages']
+            d['to_poi_email_fraction'] = d['from_this_person_to_poi'] / d[
+            'from_messages']
         if  d['to_messages'] == 0:
             d['from_poi_email_fraction'] = 0.0
         else:
-            d['from_poi_email_fraction'] = d['from_poi_to_this_person'] / d['to_messages']
-        d['total_bonus_compensation'] = d['deferral_payments'] + d['bonus'] + d['director_fees'] \
-+ d['expenses'] + d['deferred_income'] + d['long_term_incentive']
+            d['from_poi_email_fraction'] = d['from_poi_to_this_person'] / d[
+            'to_messages']
+        d['total_bonus_compensation'] = d['deferral_payments'] + d[
+        'bonus'] + d['director_fees'] + d['expenses'] + d['deferred_income'] + d[
+        'long_term_incentive']
         if d['salary'] == 0:
             d['salary_fraction_total_bonus'] = 0.0
         else:
-            d['salary_fraction_total_bonus'] = d['total_bonus_compensation'] / d['salary']
+            d['salary_fraction_total_bonus'] = d['total_bonus_compensation'] / d[
+            'salary']
     
     return data_dict
 
@@ -112,13 +119,12 @@ my_dataset = data_dict
 data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
 remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
 
-my_dataset = data_noNaNnoZero
 
-labels, features = targetFeatureSplit(my_dataset)
+labels, features = targetFeatureSplit(data_noNaNnoZero)
 
 #how many poi in my_dataset?:
 print 'my_dataset size = ', len(my_dataset)
-feature_count = np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
+feature_count = np.sum(data_noNaNnoZero, axis = 0, dtype=np.int8)[0]
 print 'poi = ' ,  feature_count
 
 ### Task 4: Try a varity of classifiers
@@ -130,21 +136,23 @@ print 'poi = ' ,  feature_count
 # Example starting point. Try investigating other evaluation techniques!
 # Moving aboce PCA to fit.
 features_train, features_test, labels_train, labels_test = \
-    train_test_split(features, labels, test_size=0.3, random_state=42)
+    train_test_split(features, labels, test_size=0.3)
 
 #Feature reduction step of pipeline
 #Start with example PCA from eigenfaces
 pca = decomposition.PCA()
 
+
+
 #scaling data using statndardization scaler
-#skl = StandardScaler()
+skl = StandardScaler()
 
 # Provided to give you a starting point. Try a variety of classifiers.
 
 #using Support Vector Machines
 from sklearn.ensemble import RandomForestClassifier
 
-clf = RandomForestClassifier()
+clf = RandomForestClassifier(random_state=41)
 '''
 clf.fit(features_train, labels_train)
 pred = clf.predict(features_test)
@@ -159,27 +167,33 @@ pred = clf.predict(features_test)
 # pipe parameters 
 n_components = [1,2,5,10,15]
 n_estimators  = [1,2,5,10]
-m_ft = [0.1,0.15,0.2,0.3,0.4,0.5,0.7]
-m_split = [2,3,4,6,10,12]
-n_jobs= [5]
+m_ft = [0.08,0.1,0.12,0.15,0.2,0.5]
+m_split = [2,3,4,6,10]
+leaf_size = [1,2,4,6]
+max_depth = [5,10,None]
 #### Pipeline:
 t0 = time()
-pipe = make_pipeline(clf)
+pipe = make_pipeline(pca,clf)
 #pca__n_components=n_components,
-estimator = GridSearchCV(pipe, dict(randomforestclassifier__n_estimators=n_estimators,
-                                    randomforestclassifier__max_features=m_ft,
-                                    randomforestclassifier__n_jobs=n_jobs,
-                                    randomforestclassifier__min_samples_split=m_split))
+estimator = GridSearchCV(pipe, 
+                         dict(pca__n_components=n_components,
+                              randomforestclassifier__n_estimators=n_estimators,
+                              randomforestclassifier__max_features=m_ft,
+                              randomforestclassifier__min_samples_leaf=leaf_size,
+                              randomforestclassifier__max_depth=max_depth),
+                              cv = 5)
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
 
 print 'Best Est = ', estimator.best_estimator_
+#assigning to clf for terter.py
+clf = estimator
 
 pipe_time = round((time() - t0), 4)
 print "\n Total Pipeline Time = ", pipe_time , "\n"
 
-pred = estimator.predict(features_test)
+pred = estimator.best_estimator_.predict(features_test)
 print classification_report(labels_test, pred, target_names=["Non-POI", "POI"])
 print pred
 
@@ -230,7 +244,7 @@ print 'Classifier Precision = ', precision_score(labels_test, pred)
 print 'Classifier Recall = ', recall_score(labels_test, pred)
 print 'Classifier False Positive Prob = ', true_positive_p(labels_test, pred)
 print 'Classifier F1 Score = ', f1_score(labels_test, pred)
-print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, 0)
+print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, pipe_time)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure

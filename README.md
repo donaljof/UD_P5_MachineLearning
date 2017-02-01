@@ -55,6 +55,8 @@ from the data set based on their explained variance:
 
 From this we can see the first component accounts for the vast majority of variance in the dataset post transformation and the number of potentially useful dimensions reduced to more managable number.
 
+Sclaing of features was added at a later stage in the project process and included as the first step in the pipleine but no noticible improvement in performance was see, possibly due to the 
+inclusion of ratio based features added to teh feature set that were then included in the PCA.
 
 # Outlier Removal
 ---
@@ -90,6 +92,8 @@ Even for the best case classifier detailed below the probability that a given PO
 identifying non-POIs would ensure few POI's are omitted from the final output, at the expense of many false positives. 
 
 Multiple attempts were made to create a SVM classifier using the RBF kernal but no working version could be found that did not identify all data points as Non-POIs. Using the poly kernal generated a F1 value of 0.11 with the majority of this poor score due to incorrectly identified POI's. 
+The difficulties in tuning this algorithm and the poor results achieved resulted in it being abandoned for futher explorations. Intuition would suggest that removing PCA from the pipeline would reduce the efffectivness of SVM due to the increased number of hyperplanes divisions needed but changing the 
+method of feature reduction may be useful. The scaling of the features used may also have been an issue though PCA and the creation of ratio based features should have alleviated this. 
 
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=3, whiten=False)), ('linearsvc', LinearSVC(C=60000, class_weight=None, dual=True, fit_intercept=True,
      intercept_scaling=3, loss='squared_hinge', max_iter=10000,
@@ -113,9 +117,9 @@ Classifier F1 Score =  0.4
 Speed Weighted F1 Score =  0.4
 avg / total       0.80      0.63      0.69        43
 
-Initial Classifier 
 
 ### Decision Trees
+
 
 Out of Box
 Classifier Accurcacy =  0.906976744186
@@ -126,55 +130,31 @@ Classifier F1 Score =  0.333333333333
 Speed Weighted F1 Score =  0.333333333333
 
 With PCA
-Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=10, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-            max_depth=None, max_features=0.2, max_leaf_nodes=None,
+Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=15, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=5, max_features=0.08, max_leaf_nodes=None,
             min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=5,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
             oob_score=False, random_state=None, verbose=0,
             warm_start=False))])
 
- Total Pipeline Time =  649.205 
+ Total Pipeline Time =  95.998 
 
              precision    recall  f1-score   support
 
-    Non-POI       0.92      0.92      0.92        38
-        POI       0.40      0.40      0.40         5
+    Non-POI       0.95      1.00      0.97        38
+        POI       1.00      0.60      0.75         5
 
-avg / total       0.86      0.86      0.86        43
+avg / total       0.96      0.95      0.95        43
 
-[ 0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  1.  0.  0.
-  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
-  1.  0.  0.  0.  0.  0.  1.]
-Classifier Accurcacy =  0.860465116279
-Classifier Precision =  0.4
-Classifier Recall =  0.4
-Classifier False Positive Prob =  0.5
-Classifier F1 Score =  0.4
-Speed Weighted F1 Score =  0.4
-
-With PCA removed
-Best Est =  Pipeline(steps=[('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
-            max_depth=None, max_features=0.1, max_leaf_nodes=None,
-            min_samples_leaf=1, min_samples_split=2,
-            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=5,
-            oob_score=False, random_state=None, verbose=0,
-            warm_start=False))])
-
- Total Pipeline Time =  128.413 
-
-             precision    recall  f1-score   support
-
-    Non-POI       0.93      1.00      0.96        38
-        POI       1.00      0.40      0.57         5
-
-avg / total       0.94      0.93      0.92        43
-
-Classifier Accurcacy =  0.93023255814
+[ 0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.
+  1.  0.  0.  0.  0.  0.  0.]
+Classifier Accurcacy =  0.953488372093
 Classifier Precision =  1.0
-Classifier Recall =  0.4
+Classifier Recall =  0.6
 Classifier False Positive Prob =  0.0
-Classifier F1 Score =  0.571428571429
-Speed Weighted F1 Score =  0.571428571429
+Classifier F1 Score =  0.75
+Speed Weighted F1 Score =  0.464092184753
 
 
 

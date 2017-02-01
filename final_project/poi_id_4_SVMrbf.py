@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_sco
 from sklearn import decomposition
 from sklearn.pipeline import make_pipeline
 from sklearn.grid_search import GridSearchCV
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 ### Task 1: Select what features you'll use.
@@ -152,7 +152,7 @@ for c in range(pca.n_components_):
         print c + 1,' explained var =  ', pca.explained_variance_ratio_[c]
 '''
 #scaling data using statndardization scaler
-#skl = StandardScaler()
+skl = MinMaxScaler()
 
 # Provided to give you a starting point. Try a variety of classifiers.
 
@@ -176,10 +176,9 @@ g_values=[0.00001,0.0001,0.001,0.01,0.1,1,10,100,1000,100000]
 
 #### Pipeline:
 t0 = time()
-pipe = make_pipeline(pca, clf)
+pipe = make_pipeline(skl,clf)
 
-estimator = GridSearchCV(pipe, dict(pca__n_components=n_components,
-                                    svc__C=C_values,
+estimator = GridSearchCV(pipe, dict(svc__C=C_values,
                                     svc__gamma=g_values))
 
 print estimator.get_params().keys()
@@ -249,11 +248,11 @@ print 'Classifier Precision = ', precision_score(labels_test, pred)
 print 'Classifier Recall = ', recall_score(labels_test, pred)
 print 'Classifier False Positive Prob = ', true_positive_p(labels_test, pred)
 print 'Classifier F1 Score = ', f1_score(labels_test, pred)
-print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, 0)
+print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, pipe_time)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
 ### that the version of poi_id.py that you submit can be run on its own and
 ### generates the necessary .pkl files for validating your results.
 
-dump_classifier_and_data(clf, my_dataset, features_list)
+dump_classifier_and_data(estimator, data_dict, features_list)
