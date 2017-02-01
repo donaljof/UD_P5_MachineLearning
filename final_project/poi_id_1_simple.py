@@ -127,7 +127,7 @@ def true_positive_p(test, pred):
             elif i[1] == 1:
                 fn += 1
     precision =  tp / (tp + fp) # testing loop above produces correct result
-    t_pos = ((tp + tn)/(tp + fp))*(tp/(tp + tn)) #eh, same as above!?
+    t_pos = ((tp + tn)/(tp + fp))*(tp/(tp + tn)) #eh, same as above!? At least I learned to apply Bayes rule
     f_pos = fp / (fn + fp) # eh, same as Recall though not identical - unsure if unique.
     return f_pos
     

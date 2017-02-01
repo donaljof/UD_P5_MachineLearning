@@ -254,11 +254,11 @@ print 'Classifier Precision = ', precision_score(labels_test, pred)
 print 'Classifier Recall = ', recall_score(labels_test, pred)
 print 'Classifier False Positive Prob = ', true_positive_p(labels_test, pred)
 print 'Classifier F1 Score = ', f1_score(labels_test, pred)
-print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, 0)
+print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred, pipe_time)
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure
 ### that the version of poi_id.py that you submit can be run on its own and
 ### generates the necessary .pkl files for validating your results.
 
-dump_classifier_and_data(clf, my_dataset, features_list)
+dump_classifier_and_data(estimator, data_dict, features_list)
