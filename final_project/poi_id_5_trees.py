@@ -14,7 +14,11 @@ from sklearn import decomposition
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.grid_search import GridSearchCV
+from sklearn.cross_validation import StratifiedShuffleSplit
+from sklearn.cross_validation import StratifiedKFold
 #from sklearn.feature_selection import SelectKBest
+
+skF = StratifiedKFold()
 
 
 ### Task 1: Select what features you'll use.
@@ -147,6 +151,7 @@ pca = decomposition.PCA()
 #scaling data using statndardization scaler
 skl = StandardScaler()
 
+sss = StratifiedShuffleSplit()
 # Provided to give you a starting point. Try a variety of classifiers.
 
 #using Support Vector Machines
@@ -174,14 +179,15 @@ max_depth = [5,10,None]
 #### Pipeline:
 t0 = time()
 pipe = make_pipeline(pca,clf)
-#pca__n_components=n_components,
+#pca__n_components=n_components
+
 estimator = GridSearchCV(pipe, 
                          dict(pca__n_components=n_components,
                               randomforestclassifier__n_estimators=n_estimators,
                               randomforestclassifier__max_features=m_ft,
                               randomforestclassifier__min_samples_leaf=leaf_size,
                               randomforestclassifier__max_depth=max_depth),
-                              cv = 5)
+                              cv = sks, scoring = 'f1')
 
 print estimator.get_params().keys()
 estimator.fit(features_train, labels_train)
