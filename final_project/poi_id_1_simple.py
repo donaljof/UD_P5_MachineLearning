@@ -19,6 +19,21 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 #Creating a simple first pass at POI identifier with a few hand picked features.
 features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses'] # You will need to use more features
 
+'''
+## All features, part of troubleshooting later classifiers
+
+financial_features = ['salary', 'deferral_payments', 'total_payments', 'loan_advances',\
+ 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value',\
+ 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', \
+ 'restricted_stock', 'director_fees']
+
+#email addrsss removed as cannot be parsed with featureFormat
+email_features = ['to_messages', 'from_poi_to_this_person', \
+'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi']
+
+features_list = ['poi'] + financial_features + email_features  
+'''
+
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
@@ -26,7 +41,7 @@ with open("final_project_dataset.pkl", "r") as data_file:
 ### Task 2: Remove outliers
 
 #Deleting most obvious outlier  - TOTAL
-exclude_persons =  ['TOTAL'] #,'LOCKHART EUGENE E', 'THE TRAVEL AGENCY IN THE PARK']
+exclude_persons =  ['TOTAL','LOCKHART EUGENE E', 'THE TRAVEL AGENCY IN THE PARK']
 
 for name in data_dict.keys():
     if name in exclude_persons:
@@ -57,7 +72,7 @@ data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
 remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
 print 'no 0s or NaN data: ', len(data_noNaNnoZero)
 
-my_dataset = data_noNaNnoZero
+
 count = 0
 for name in data_dict.keys():    
     all_zeros = True
@@ -71,12 +86,13 @@ for name in data_dict.keys():
         #print data_dict[name]
 print count
 
-labels, features = targetFeatureSplit(my_dataset)
+labels, features = targetFeatureSplit(data_noNaNnoZero)
 
 #how many poi in my_dataset?:
 print 'my_dataset size = ', len(my_dataset)
-print 'poi = ' ,  np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
-
+#print 'poi = ' ,  np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
+feature_count = np.sum(data_noNaNnoZero, axis = 0, dtype=np.int8)[0]
+print 'poi = ' ,  feature_count
 
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
@@ -85,9 +101,22 @@ print 'poi = ' ,  np.sum(my_dataset, axis = 0, dtype=np.int8)[0]
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
 # Provided to give you a starting point. Try a variety of classifiers.
+
 from sklearn.naive_bayes import GaussianNB
 clf = GaussianNB()
+'''
+#For like for like comparison with GuassianNB 
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+clf = LinearDiscriminantAnalysis()
 
+
+# to check later developmets arent skewing witht the data
+from sklearn.ensemble import RandomForestClassifier
+clf = RandomForestClassifier()
+
+from sklearn.svm import SVC
+clf = SVC()
+'''
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
 ### folder for details on the evaluation method, especially the test_classifier
@@ -145,7 +174,7 @@ def Grand_Prix(test, pred, speed_weight = 0.5):
 print 'Classifier Accurcacy = ', accuracy_score(labels_test, pred)
 print 'Classifier Precision = ', precision_score(labels_test, pred)
 print 'Classifier Recall = ', recall_score(labels_test, pred)
-print 'Classifier False Positive Rate = ', true_positive_p(labels_test, pred)
+#print 'Classifier False Positive Rate = ', true_positive_p(labels_test, pred)
 print 'Classifier F1 Score = ', f1_score(labels_test, pred)
 print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred)
 
@@ -153,5 +182,5 @@ print 'Speed Weighted F1 Score = ', Grand_Prix(labels_test, pred)
 ### check your results. You do not need to change anything below, but make sure
 ### that the version of poi_id.py that you submit can be run on its own and
 ### generates the necessary .pkl files for validating your results.
-
+my_dataset = data_dict
 dump_classifier_and_data(clf, my_dataset, features_list)
