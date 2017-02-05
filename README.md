@@ -12,11 +12,25 @@ This classic case of corperate fraud is used as the basis Project 5 in the Udaci
 
 The purpose of the project is to identify persons of interest (POI's) within the Enron email corpus (May 7th 2015 version used [2]) combined with publicly avialable pay and share data. 
 For each of 145 the manually identified POI's/non-POI's a set of descriptive features is associated with the person giving either financial or email information on the person in question.
-Using this financial and email information the aim is to create a classifer capable of correctly identifying persons of interest in this data set or a data set with the same features. 
+Using this financial and email information the aim is to create a classifer capable of correctly identifying persons of interest in this data set that can be applied across the full enron corpus.
+
+In this project a machine learning classifer implemented using the Python package Scikit-Learn will be developed. The use of machine learning in this task allows a classification problem 
+such as this to be completed programmatically with far less human input than manual idenification  of POIs and in a fraction of the time. A variety of supervised machine learning classifiers
+have been applied including Nieve Bayes, Support Vector Machines and Ensenmble methods.
+Naive Bayes was selected for its simplicity as an initial classifer and to get idea of an out of the box performance.
+Support vector machines classifier was used as it is a popular and well understood alghorith that works well with binary classification problems though the high feature count of this data set and low 
+number of POIs proved to be an issue. SVM does not work well with heavly skewed classification populations and this proved a problem.
+Random Forest classifer was used to take advantage of the high number of possible features in the dataset and to leverage the power of an ensemble method.
+Linear Discriminant Analysis classifer was used with shrinkage applied to deal with the low training points relative to possible features. Based on the success of Naive Bayes and the assumed
+covariance of the data features (especially in the financial data). 
+
+The data set provided contains 143 manually identified persons, if they are a person of interest (POI) or not (represente by a 1 or 0) and a selection of financial and emsil features shown below.
 
 financial features: ['salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees'] (all units are in US dollars)
 
 email features: ['to_messages', 'email_address', 'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi'] (units are generally number of emails messages; notable exception is ‘email_address’, which is a text string)
+
+There are a total of 146 data points of which 18 are identified as POI's and the rest are not.
 
 The main file for this project located in this repositry is poi_id.py  located in the final_project directory, this is the completed version of the classifier. 
 Multiple steps in the learning process and alternative classifiers have been saved in the format poi_id_X.py to record attempted classifiers (and revert in event of dead end).
@@ -119,7 +133,7 @@ Classifier Recall =  0.6
 Classifier False Positive Prob =  0.833333333333
 Classifier F1 Score =  0.333333333333
 Speed Weighted F1 Score =  0.333333333333
-
+ 
 
 ### Decision Trees
 
@@ -136,7 +150,8 @@ Speed Weighted F1 Score =  0.333333333333
 With PCA and GridselctCV looping over possible values for 'n_components', 'n_estimators', 'max_features', 'min_samples_leaf' and 'max_depth'. Unlike previous classifers above, the mistake in the
 Speed Weighted F1 Score was fixed and it is giving a reduced F1 score for this slower alghorith (subjective measure but sclaled to penalize when the metric creator is getting impatient).
 
-Annoyingly, due to the random nature of the Random Forest Classifier the high score below is not repeatabe. Running tester code on below produced an abismal 
+Annoyingly, due to the random nature of the Random Forest Classifier the high score below is not repeatabe. Running tester code on below produced an poor F1 score of 0.22. 
+Either the variation in the features selected by random forest created "lucky" classifer or its possible the series of POI's selected by the classifer fitted to correct results by pure
 
 
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=15, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
@@ -166,7 +181,138 @@ Classifier F1 Score =  0.75
 Speed Weighted F1 Score =  0.464092184753
 
 
+After some frustration with the mediocre effectivness of the random forest classifiers (and on suggestion from the forums), the scoring parameter was uptated to 'f1' and 
+StratifiedShuffleSplit used as cross validation.
 
+Running an out of box Random Forest Classifier, searching over PCA n_components gives a F1 score of 0.36, an improvement to the origional OOB result of 0.33.
+
+Best Est =  Pipeline(steps=[('pca', PCA(copy=True, iterated_power='auto', n_components=10, random_state=None,
+  svd_solver='auto', tol=0.0, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_node...stimators=10, n_jobs=1, oob_score=False, random_state=41,
+            verbose=0, warm_start=False))])
+
+ Total Pipeline Time =  2.302 
+
+             precision    recall  f1-score   support
+
+    Non-POI       0.89      0.92      0.91        37
+        POI       0.40      0.33      0.36         6
+
+avg / total       0.83      0.84      0.83        43
+
+Classifier Accurcacy =  0.837209302326
+Classifier Precision =  0.4
+Classifier Recall =  0.333333333333
+Classifier False Positive Prob =  0.428571428571
+Classifier F1 Score =  0.363636363636
+Speed Weighted F1 Score =  0.359474904232 
+
+To further boost the preformace of the classifier, skaling was introduced using a MinMax scaler with default settings. The reasoning being that some of the financial components were producing
+incorrect splitting of the dataset as part of the tree generation and causing extremem overfitting along some of the decision trees used.
+A wide search of possible tunign parameters was used in an effort to seek out the optimum parameters for the classifer though this resulted in a huge runtime.
+
+citerion = ["gini", "entropy"]
+n_estimators  = [5,10, 15, 20, 30, 40]
+max_features = [0.01,0.03,0.04,0.08,0.1,0.15,0.23, 0.4]
+max_split = [2,3,4,6,10, 20]
+min_samples_leaf = [1,2,4,6]
+max_depth = [5,10,None]
+
+The best estimate classifier produced a F1 score of 0.38 using the stratified shuffle split data in grid search and an even less impressive 0.25 when fitted sperately to a train test split data that was 
+used to calculate the custom metric produced.
+
+Best Est =  Pipeline(steps=[('minmaxscaler', MinMaxScaler(copy=True, feature_range=(0, 1))), ('pca', PCA(copy=True, iterated_power='auto', n_components=19, random_state=44,
+  svd_solver='auto', tol=0.0, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',...stimators=20, n_jobs=1, oob_score=False, random_state=44,
+            verbose=0, warm_start=False))])
+
+ Total Pipeline Time =  7131.968 
+
+Best GridSearch F1 Score =  0.376868686869
+Classifier Accurcacy =  0.860465116279
+Classifier Precision =  0.5
+Classifier Recall =  0.166666666667
+Classifier False Positive Prob =  0.166666666667
+Classifier F1 Score =  0.25
+Speed Weighted F1 Score =  8.14832365651e-17
+
+Running tester.py resulted in a abismal 0.18 and failled to meet the passing criterion.
+
+Accuracy: 0.85747       Precision: 0.38725      Recall: 0.11850 F1: 0.18147     F2: 0.13760
+        Total predictions: 15000        True positives:  237    False positives:  375   False negatives: 1763   True negatives: 12625
+
+Again a more complex classifier has come nowhere near the results achieved by an OOB Naive Bayes classifer despite extensive grid search, scaling, PCA and more intensive cross validation.
+At this point, given there has been no significant increase in classifer performance I decided to abandon Random Forest Classifers as a possible final classifer.
+
+Looking at the results so far, reading the documentation and trying to understand what is going wrong there are several possibilities:
+
+* The relative small size of the training dataset coupled with the use of GridSearchCV is resulting in overfit classifers or classifiers that very poorly optimized for data beyond the test set. If the classifer tuning
+was completed manually its possible a more accurate classifer could be found. Against this, the overfitting thoery in particular, is the low F1 scores even with the test set included.
+
+* Too many features are being included upfront and some features are being included that are screwing up all subsequent analysis or one of the custom created features is toxic to all 
+subsequent analysis for some reason. Testing the classifiers with a manually chosen subset of the features also has produced poor results but its possible the manually chosen feature set was also bad.
+
+* PCA is a poor choice for this data set due to the high dimension to data point ratio and the generation of reduced dimensionatily data is producing outputs with less predictive power than the origional data.
+Its also possible it is being implemented incorrecty (needs tuning) or shouldnt be fed into the types of classifers used so far (usefule elsewhere but not here).
+
+*  Adding a scaler is not compatable with PCA and has messed up the data in some way just as a optimal implementation of Random Forests was being reached. Not likely as the results have
+been poor all the way along and my understanding is scaling should help with strongly dispersed features.
+
+* SVM and Random Forests are, in fact, terrible choices for classification of this type of problem and particularly ill-suited to this data set.
+
+* There is some other problem that I have not identified and / or I have made an complete balls of this somehow and some fundemental error in the code is poisoning all results.
+
+### Linear Discriminant Analysis
+
+In the above section, I outlined several possible reasons for poor classifer perfomance. To try to segment the possibility that the base classifier chosen is the problem and not some other data 
+transformation or tuning is responsible, all 3 were tested using the same code for everthing but assigning the classifier (clf = ...). The base out of box parameters were unchanged and the tester.py 
+script ran on each of the resultant classifers. 
+
+In addition to the classifers attempted already, a new classifer was added - Linear Discriminant Analysis. This classifier was chosen as result of some searching for classifers that work
+well with small datasets and a larger number of features. More detailed investigation of the use of Discriminant Analysis and reading the sklearn documentation suggests it works well with
+multicollinearity, requires limited tuning and works under simlilar mathematical principles to the best classifer so far, Guassian Naive Bayes (based on Bayes rule and assumes multivariate normal distribution). 
+
+
+http://stats.stackexchange.com/questions/63565/good-classifiers-for-small-training-sets
+		
+GaussianNB(priors=None)
+        Accuracy: 0.85800       Precision: 0.50535      Recall: 0.28350 F1: 0.36323     F2: 0.31079
+        Total predictions: 14000        True positives:  567    False positives:  555   False negatives: 1433   True negatives: 11445
+		
+LinearDiscriminantAnalysis(n_components=None, priors=None, shrinkage=None,
+              solver='svd', store_covariance=False, tol=0.0001)
+        Accuracy: 0.86550       Precision: 0.57687      Recall: 0.21950 F1: 0.31800     F2: 0.25054
+        Total predictions: 14000        True positives:  439    False positives:  322   False negatives: 1561   True negatives: 11678
+		
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_impurity_split=1e-07, min_samples_leaf=1,
+            min_samples_split=2, min_weight_fraction_leaf=0.0,
+            n_estimators=10, n_jobs=1, oob_score=False, random_state=None,
+            verbose=0, warm_start=False)
+        Accuracy: 0.84529       Precision: 0.41354      Recall: 0.19850 F1: 0.26824     F2: 0.22154
+        Total predictions: 14000        True positives:  397    False positives:  563   False negatives: 1603   True negatives: 11437
+
+Got a divide by zero when trying out: SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma='auto', kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+Precision or recall may be undefined due to a lack of true positive predicitons.
+
+From the results above the performace of LDA is similar to Naive Bayes with better precision but an overall lower F1 score. 
+The Random Forest is not as effective but it can be noted
+this is a better result than the 2 hour PCA/GridSearchCV attempt in the last section. This suggests there was issues with feature selection/reduction or tuning of the Random Forests used previously though
+the starting point for the classifer is low already.
+For the SVC classifer the produced an error message due to it not predicting any POI's. The starting point for this classifer is basically 0 for this problem though it may be possible to create a functioning and powerful classifer 
+with the correct tuning. Given the multitude of other options, it is far easier to start with something that gives a decent OOB result to start with and work from there.
+
+The analyis above and the deeper thinking about the classifer choice is some thing that really should have been completed upfront and not halfway through the project. A key learnign from
+this would be to start simple and work towards increased complexity / tuning for each classifer. In the rush to understand and apply different techniques such as PCA, scaling, pipelines and GridSearchCV too much
+was applied too quickly. Each new layer needs to be applied with a keen eye on what it does to the classifier performance and some deep thinking as to the impact on what is happening to the dataset.
+The approach with LDA will be to apply new features and more advanced techniques incrementally, with careful anaysis of the impact at each step and consideration of the background impact.
+
+
+
+		
 # Classifier Tuning
 ---
 

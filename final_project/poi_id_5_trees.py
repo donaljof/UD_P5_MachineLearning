@@ -11,15 +11,11 @@ from sklearn.cross_validation import train_test_split
 from time import time
 from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
 from sklearn import decomposition
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import make_pipeline
-from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import StratifiedShuffleSplit
-from sklearn.cross_validation import StratifiedKFold
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedShuffleSplit
 #from sklearn.feature_selection import SelectKBest
-
-skF = StratifiedKFold()
-
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -45,6 +41,7 @@ for f in dud_features:
 with open("final_project_dataset.pkl", "r") as data_file:
     data_dict = pickle.load(data_file)
     
+print 'starting size', len(data_dict)
 ### Task 2: Remove outliers
 
 #Deleting most obvious outlier  - TOTAL
@@ -117,7 +114,7 @@ features_list = features_list + new_features
 ### Store to my_dataset for easy export below.
 
 my_dataset = data_dict
-
+print 'my_dataset size = ', len(my_dataset)
 ### Extract features and labels from dataset for local testing
 
 data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
@@ -140,24 +137,24 @@ print 'poi = ' ,  feature_count
 # Example starting point. Try investigating other evaluation techniques!
 # Moving aboce PCA to fit.
 features_train, features_test, labels_train, labels_test = \
-    train_test_split(features, labels, test_size=0.3)
+    train_test_split(features, labels, test_size=0.3,random_state=4)
 
 #Feature reduction step of pipeline
 #Start with example PCA from eigenfaces
-pca = decomposition.PCA()
+pca = decomposition.PCA(random_state=44)
 
 
 
 #scaling data using statndardization scaler
-skl = StandardScaler()
+skl = MinMaxScaler()
 
-sss = StratifiedShuffleSplit()
+sss = StratifiedShuffleSplit(random_state=44, test_size=0.3)
 # Provided to give you a starting point. Try a variety of classifiers.
 
 #using Support Vector Machines
 from sklearn.ensemble import RandomForestClassifier
 
-clf = RandomForestClassifier(random_state=41)
+clf = RandomForestClassifier(random_state=44)
 '''
 clf.fit(features_train, labels_train)
 pred = clf.predict(features_test)
@@ -170,40 +167,50 @@ pred = clf.predict(features_test)
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
 # pipe parameters 
-n_components = [1,2,5,10,15]
-n_estimators  = [1,2,5,10]
-m_ft = [0.08,0.1,0.12,0.15,0.2,0.5]
-m_split = [2,3,4,6,10]
+n_components = [2,4,6, 10, 13,15,19]
+
+citerion = ["gini", "entropy"]
+#randomforestclassifier__criterion=citerion
+n_estimators  = [5,10, 15, 20, 30, 40]
+#randomforestclassifier__n_estimators=n_estimators
+m_ft = [0.01,0.03,0.04,0.08,0.1,0.15,0.23, 0.4]
+#randomforestclassifier__max_features=m_ft
+m_split = [2,3,4,6,10, 20]
+#randomforestclassifier__max_features=m_ft
 leaf_size = [1,2,4,6]
+#randomforestclassifier__min_samples_leaf=leaf_size
 max_depth = [5,10,None]
+#randomforestclassifier__max_depth=max_depth
+
 #### Pipeline:
 t0 = time()
-pipe = make_pipeline(pca,clf)
-#pca__n_components=n_components
+pipe = make_pipeline(skl,pca,clf)
+
 
 estimator = GridSearchCV(pipe, 
                          dict(pca__n_components=n_components,
                               randomforestclassifier__n_estimators=n_estimators,
-                              randomforestclassifier__max_features=m_ft,
                               randomforestclassifier__min_samples_leaf=leaf_size,
-                              randomforestclassifier__max_depth=max_depth),
-                              cv = sks, scoring = 'f1')
+                              randomforestclassifier__max_features=m_ft,
+                              randomforestclassifier__max_depth=max_depth,
+                              randomforestclassifier__criterion=citerion),
+                              cv = sss, scoring = 'f1')
 
-print estimator.get_params().keys()
-estimator.fit(features_train, labels_train)
+#Fitting the grid search estimator
+estimator.fit(features, labels)
 
 print 'Best Est = ', estimator.best_estimator_
-#assigning to clf for terter.py
-clf = estimator
+#assigning to clf for tester.py
 
 pipe_time = round((time() - t0), 4)
 print "\n Total Pipeline Time = ", pipe_time , "\n"
 
-pred = estimator.best_estimator_.predict(features_test)
-print classification_report(labels_test, pred, target_names=["Non-POI", "POI"])
-print pred
+print "Best GridSearch F1 Score = ", estimator.best_score_
 
-#'''###################end cut off  for Grid
+#clf = estimator.best_estimator_
+clf = RandomForestClassifier(random_state=4)
+clf.fit(features_train, labels_train)
+pred = clf.predict(features_test)
 
 #Custom slightly pointless metric 
 def true_positive_p(test, pred):
