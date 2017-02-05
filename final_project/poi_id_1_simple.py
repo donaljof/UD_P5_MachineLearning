@@ -101,10 +101,10 @@ print 'poi = ' ,  feature_count
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
 # Provided to give you a starting point. Try a variety of classifiers.
-'''
+
 from sklearn.naive_bayes import GaussianNB
 clf = GaussianNB()
-
+'''
 #For like for like comparison with GuassianNB 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 clf = LinearDiscriminantAnalysis()
@@ -113,10 +113,10 @@ clf = LinearDiscriminantAnalysis()
 # to check later developmets arent skewing witht the data
 from sklearn.ensemble import RandomForestClassifier
 clf = RandomForestClassifier()
-'''
+
 from sklearn.svm import SVC
 clf = SVC()
-
+'''
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
 ### using our testing script. Check the tester.py script in the final project
 ### folder for details on the evaluation method, especially the test_classifier
