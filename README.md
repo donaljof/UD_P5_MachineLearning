@@ -310,9 +310,35 @@ this would be to start simple and work towards increased complexity / tuning for
 was applied too quickly. Each new layer needs to be applied with a keen eye on what it does to the classifier performance and some deep thinking as to the impact on what is happening to the dataset.
 The approach with LDA will be to apply new features and more advanced techniques incrementally, with careful anaysis of the impact at each step and consideration of the background impact.
 
+Using a manully selected features set and performing no pre processing of data the starting point for the untuned classifier can be obtained. The plan will beto incrementally add 
+features, select tuning and layers of preprocessing with analysis of its impact at each step.
+
+features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
+
+Starting point - Accuracy: 0.86550       Precision: 0.57687      Recall: 0.21950 F1: 0.31800     F2: 0.25054
 
 
-		
+Fist step in tuning this alghorithm is to choose a solver type of the three available, singalar value decomposition being the default.
+
+Least Squares - Accuracy: 0.86493       Precision: 0.57087      Recall: 0.21950 F1: 0.31708     F2: 0.25031
+
+Eigenvalue Decomposition - Accuracy: 0.78743       Precision: 0.30354      Recall: 0.37700 F1: 0.33631     F2: 0.35960
+
+From above it can be seen there is a sigificant gain in recall when using the eigen solver. In addition the least squares and eigenvalue solvers support the shrinkage 
+option (automatic shinkage applied in both cases):
+
+Least Square with Shrinkage - Accuracy: 0.86636       Precision: 0.58238      Recall: 0.22800 F1: 0.32770     F2: 0.25959
+
+
+Singular Value Decomposition - Accuracy: 0.84607       Precision: 0.34441      Recall: 0.17100 F1: 0.22853     F2: 0.19015
+
+Least Squares - Accuracy: 0.84580       Precision: 0.34702      Recall: 0.17750 F1: 0.23487     F2: 0.19672
+Least Square with Shrinkage - Accuracy: 0.85147       Precision: 0.41052      Recall: 0.26150 F1: 0.31949     F2: 0.28197
+
+Eigenvalue Decomposition - Accuracy: 0.77527       Precision: 0.24621      Recall: 0.33250 F1: 0.28292     F2: 0.31072
+Eigenvalue Decomposition with Shinkage - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+
+
 # Classifier Tuning
 ---
 
