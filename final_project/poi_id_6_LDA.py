@@ -7,7 +7,7 @@ sys.path.append("../tools/")
 
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from time import time
 from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
 from sklearn import decomposition
@@ -15,7 +15,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import make_pipeline
 #from sklearn.model_selection import GridSearchCV
 #from sklearn.model_selection import StratifiedShuffleSplit
-#from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import SelectKBest
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -73,6 +73,7 @@ for name in data_dict.keys():
 #Most likely a far less messy way of doing this but below currently works without issues
 new_features = ['exercised_stock_ratio','to_poi_email_fraction','from_poi_email_fraction', \
                 'total_bonus_compensation','salary_fraction_total_bonus']
+                
 def feature_adder(data_dict):
     for name in data_dict.keys():
         d = data_dict[name]
@@ -120,14 +121,16 @@ my_dataset = data_dict
 #features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
 features_list = all_features
 
+
 print len(features_list)
 bad_features  =  ['restricted_stock_deferred', 'deferred_income']
 
 for ft in bad_features:
-    features_list.remove(ft)
-    print 'deleted: ', ft        
+    if ft in features_list:
+        features_list.remove(ft)
+        print 'deleted: ', ft        
         
-print len(features_list)        
+print 'No of features uses = ', len(features_list)        
 
 data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
 remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
@@ -145,10 +148,13 @@ print 'poi = ' ,  poi_count
 ### you'll need to use Pipelines. For more info:
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
-# Example starting point. Try investigating other evaluation techniques!
+######## Feature Reduction and Scaling ##########
+    
+skb = SelectKBest(k=3)
 
-features_train, features_test, labels_train, labels_test = \
-    train_test_split(features, labels, test_size=0.3,random_state=4)
+features = skb.fit_transform(features, labels)
+
+
 
 #Feature reduction step of pipeline
 #Start with example PCA from eigenfaces
@@ -160,10 +166,13 @@ features_train, features_test, labels_train, labels_test = \
 #Stratified Shuffle Split for cross validation
 #sss = StratifiedShuffleSplit(random_state=44, test_size=0.3)
 
+features_train, features_test, labels_train, labels_test = \
+    train_test_split(features, labels, test_size=0.3,random_state=4)
+
 #Linear discriminant Analysis
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-clf = LinearDiscriminantAnalysis(solver = 'svd')
+clf = LinearDiscriminantAnalysis(solver = 'eigen', shrinkage = 'auto')
 
 t0 = time()
 clf.fit(features_train, labels_train)

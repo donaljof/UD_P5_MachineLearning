@@ -315,28 +315,64 @@ features, select tuning and layers of preprocessing with analysis of its impact 
 
 features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
 
-Starting point - Accuracy: 0.86550       Precision: 0.57687      Recall: 0.21950 F1: 0.31800     F2: 0.25054
+ * Starting point                         - Accuracy: 0.86550       Precision: 0.57687      Recall: 0.21950 F1: 0.31800     F2: 0.25054
 
 
 Fist step in tuning this alghorithm is to choose a solver type of the three available, singalar value decomposition being the default.
 
-Least Squares - Accuracy: 0.86493       Precision: 0.57087      Recall: 0.21950 F1: 0.31708     F2: 0.25031
+ * Least Squares                          - Accuracy: 0.86493       Precision: 0.57087      Recall: 0.21950 F1: 0.31708     F2: 0.25031
 
-Eigenvalue Decomposition - Accuracy: 0.78743       Precision: 0.30354      Recall: 0.37700 F1: 0.33631     F2: 0.35960
+ * Eigenvalue Decomposition               - Accuracy: 0.78743       Precision: 0.30354      Recall: 0.37700 F1: 0.33631     F2: 0.35960
 
 From above it can be seen there is a sigificant gain in recall when using the eigen solver. In addition the least squares and eigenvalue solvers support the shrinkage 
 option (automatic shinkage applied in both cases):
 
-Least Square with Shrinkage - Accuracy: 0.86636       Precision: 0.58238      Recall: 0.22800 F1: 0.32770     F2: 0.25959
+ * Least Square with Shrinkage            - Accuracy: 0.86636       Precision: 0.58238      Recall: 0.22800 F1: 0.32770     F2: 0.25959
 
+ * Eigenvalue Decomposition with shinkage - Accuracy: 0.82271       Precision: 0.36491      Recall: 0.32550 F1: 0.34408     F2: 0.33269
 
-Singular Value Decomposition - Accuracy: 0.84607       Precision: 0.34441      Recall: 0.17100 F1: 0.22853     F2: 0.19015
+From above result a small improvement in F1 score is gained with the inclusion of shrinkage. As the purpose of shrinkage is to deal with high dimesionality its impact might best be oberved with a 
+much larger set of features.
 
-Least Squares - Accuracy: 0.84580       Precision: 0.34702      Recall: 0.17750 F1: 0.23487     F2: 0.19672
-Least Square with Shrinkage - Accuracy: 0.85147       Precision: 0.41052      Recall: 0.26150 F1: 0.31949     F2: 0.28197
+For the following runs all of available features and all custom features were included. Some features with negaive numbers were removed as they resulted in errors with the solver 
+set to Eigenvalue Decomposition, its not clear why the classifer would be inable to handle negative values or why eigen solver choke on these features when other classifiers are able
+to handle them. The answer to this likely in the linear algebra used to estimate the maximum conditional probability but this is beyond the scope of this project.
 
-Eigenvalue Decomposition - Accuracy: 0.77527       Precision: 0.24621      Recall: 0.33250 F1: 0.28292     F2: 0.31072
-Eigenvalue Decomposition with Shinkage - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+ * Least Squares                          - Accuracy: 0.83427       Precision: 0.29372      Recall: 0.17300 F1: 0.21775     F2: 0.18849
+ * Least Square with Shrinkage            - Accuracy: 0.85233       Precision: 0.40000      Recall: 0.21500 F1: 0.27967     F2: 0.23691
+
+ * Eigenvalue Decomposition               - Accuracy: 0.77527       Precision: 0.24621      Recall: 0.33250 F1: 0.28292     F2: 0.31072
+ * Eigenvalue Decomposition with Shinkage - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+
+ * Singular Value Decomposition           - Accuracy: 0.83500       Precision: 0.29649      Recall: 0.17300 F1: 0.21850     F2: 0.18872
+ 
+The LDA classifer performance drops when an overabundance of features are included but the impact of shrinkage is much more significant, especially for the leat squares solver. The
+Its clear from this test that inclusion of too many features, even with ways of dealing with high dimenstionality. The standard SVD solver shows a similar reduction in performance with large numbers
+of features included but it lacks a shinkage option.
+
+Finally changing to to the quadratic version of LDA is examined as sklearn documentation suggests it should perform better in data sets with varying degreees of feature covariance. Given the wide
+selection of data and data types in the email corpus data there may be an additional perfomance boost by using this form.
+
+ * QDA (manually selected features)       - Accuracy: 0.84457       Precision: 0.41635      Recall: 0.21900 F1: 0.28702     F2: 0.24194
+ * QDA (all features)                     - Accuracy: 0.83627       Precision: 0.20466      Recall: 0.07900 F1: 0.11400     F2: 0.09006
+ 
+Quadratic linear analyisis does not perform as well os LDA on the reduced feature set and is falls down compeltly when the full set is used. This may be worth revisiting with correct 
+preprocessing in place but for now this route appears a dead end.
+
+Next step in the evolution of this classifier is increasing the number of features and by extension selecting them. Before looking at transforming the data through PCA and since the LDA classifer
+is already has build in ways to deal with high dimensionality, the select K means method is used as a starting point.
+Using LDA with the Eigenvalue solver, shrinkage and the manually selected feature set (miniset) or the full set (full) multiple k values were supplied.
+
+ * LDA(eigen, auto shink, miniset, kbest = 1) - Accuracy: 0.82271       Precision: 0.36491      Recall: 0.32550 F1: 0.34408     F2: 0.33269
+ * LDA(eigen, auto shink, miniset, kbest = 4) - Accuracy: 0.82271       Precision: 0.36491      Recall: 0.32550 F1: 0.34408     F2: 0.33269
+ 
+No improvement with the already small manulally selected feature set though there is suprisingly no 
+
+ * LDA(eigen, auto, full, kbest = 1)          - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+ * LDA(eigen, auto, full, kbest = 10)         - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+ 
+ !!!!!!!!!all F1 scores are the same - need to build pipe for tester to comprehend preprocessing
+
 
 
 # Classifier Tuning
