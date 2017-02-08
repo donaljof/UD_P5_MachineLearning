@@ -363,18 +363,95 @@ Next step in the evolution of this classifier is increasing the number of featur
 is already has build in ways to deal with high dimensionality, the select K means method is used as a starting point.
 Using LDA with the Eigenvalue solver, shrinkage and the manually selected feature set (miniset) or the full set (full) multiple k values were supplied.
 
- * LDA(eigen, auto shink, miniset, kbest = 1) - Accuracy: 0.82271       Precision: 0.36491      Recall: 0.32550 F1: 0.34408     F2: 0.33269
+ * LDA(eigen, auto shink, miniset, kbest = 1) - Accuracy: 0.79621       Precision: 0.28514      Recall: 0.28300 F1: 0.28407     F2: 0.28343
  * LDA(eigen, auto shink, miniset, kbest = 4) - Accuracy: 0.82271       Precision: 0.36491      Recall: 0.32550 F1: 0.34408     F2: 0.33269
  
-No improvement with the already small manulally selected feature set though there is suprisingly no 
-
- * LDA(eigen, auto, full, kbest = 1)          - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
- * LDA(eigen, auto, full, kbest = 10)         - Accuracy: 0.78160       Precision: 0.27614      Recall: 0.39350 F1: 0.32454     F2: 0.36267
+With the manually selected feature set and select k best applied there is a small dissimprovement when selecting only 1 feature suggesting all 4 of the manaually selected features are meaningful (no one feature is dominating compeltly).
+With all 4 selected the resultant F1 score is the same, which makes sense.
  
- !!!!!!!!!all F1 scores are the same - need to build pipe for tester to comprehend preprocessing
+ * LDA(eigen, auto, full, kbest = 1)          - Accuracy: 0.80907       Precision: 0.28927      Recall: 0.29650 F1: 0.29284     F2: 0.29502
+ * LDA(eigen, auto, full, kbest = 4)          - Accuracy: 0.83367       Precision: 0.38265      Recall: 0.40350 F1: 0.39280     F2: 0.39915
+ * LDA(eigen, auto, full, kbest = 5)          - Accuracy: 0.81767       Precision: 0.33409      Recall: 0.37000 F1: 0.35113     F2: 0.36221
+ * LDA(eigen, auto, full, kbest = 10)         - Accuracy: 0.74933       Precision: 0.25824      Recall: 0.47000 F1: 0.33333     F2: 0.40378
+ * LDA(eigen, auto, full, kbest = 15)         - Accuracy: 0.77173       Precision: 0.27136      Recall: 0.42250 F1: 0.33047     F2: 0.38015
+ * LDA(eigen, auto, full, kbest = 20)         - Accuracy: 0.73340       Precision: 0.25303      Recall: 0.51200 F1: 0.33868     F2: 0.42500
+ 
+For the full feature set and k = 1, there is a small increase in F1 score over the manaually selected features meaning the best possible predictive feature was not included. 
+By looping through the K best F scores it can be seen that the best feature (by this metric) is "exercised_stock_options". By trying multiple k numbers the impact of increased features can be
+seen with a initial increase in F1 score followed by a reduction as a result of reduced precision. Its possible as that more features are added to the classifer the decision boundries 
+become more complex and tend towards overfitting to the data resulting in an increase in false positives. The best possible K value was found by running with multiple k values and slecting 
+the best result (k = 4).
 
+Seleck K Best Scorec (ANOVA F - values)
+salary                       --  19.7903943832
+deferral_payments            --  1.04233627397
+total_payments               --  9.64411359811
+bonus                        --  10.6430154732
+total_stock_value            --  25.5121582709
+expenses                     --  7.72689807011
+exercised_stock_options      --  25.9894214301
+other                        --  7.94119255974
+long_term_incentive          --  17.2253598825
+restricted_stock             --  10.103322706
+director_fees                --  1.65726925903
+to_messages                  --  0.130241166893
+from_poi_to_this_person      --  0.0939291393021
+from_messages                --  0.0220145818701
+from_this_person_to_poi      --  1.94142663375
+shared_receipt_with_poi      --  2.35776785893
+exercised_stock_ratio        --  0.0263590242677
+to_poi_email_fraction        --  0.135172413793
+from_poi_email_fraction      --  nan
+total_bonus_compensation     --  8.07329192324
+salary_fraction_total_bonus  --  0.0241660636938
 
+Post analysis above 'from_poi_email_fraction' was removed from the features as it is not operating as expected and appears to return the same value every time.
 
+As well as feature selection, scaling the features is another preprocessing step to be considered. This is especially important for classifers such as LDA taht are expectign normally distributed
+data as an imput. For this reason a standard scaler was introduced to give a more normal traning dataset for the classifer to fit on.
+
+ * LDA(singular, manual features)          - Accuracy: 0.86550       Precision: 0.57687      Recall: 0.21950 F1: 0.31800     F2: 0.25054
+ * LDA(lsqr, auto, manual features)        - Accuracy: 0.86636       Precision: 0.58238      Recall: 0.22800 F1: 0.32770     F2: 0.25959
+ * LDA(eigen, auto, manual features)       - Accuracy: 0.86643       Precision: 0.58145      Recall: 0.23200 F1: 0.33167     F2: 0.26370
+
+ With manually selected features and with a eigen value / auto shinkage LDA classifer there is actually a small decrease in the F1 score for the eigen and least squares solvers and no change for the default 
+singular value decompostion. Its possible the shinkage feature is not compatable with standardizationa dn too much transformation of the data causes information loss tha hurts classifer performance
+
+ * LDA(lsqr, no shink, manual features)        - Accuracy: 0.86493       Precision: 0.57087      Recall: 0.21950 F1: 0.31708     F2: 0.25031
+ * LDA(eigen, no shink, manual features)       - Accuracy: 0.87214       Precision: 0.65957      Recall: 0.21700 F1: 0.32656     F2: 0.25064
+ 
+ Removing shinkage doesn't help and reduces the F1 score further. Its possible standardization is not the ideal scalar for this, another simple option is a MinMax scaler.
+ 
+ * LDA(lsqr, auto, manual features)        - Accuracy: 0.86636       Precision: 0.58238      Recall: 0.22800 F1: 0.32770     F2: 0.25959
+ 
+ For the eigen solver, using a MinMaxScaler threw an error for predicting no POI's and for least squres it returns the same values as standardization. This does not look like a preprocessing
+ route worth pursuing.
+ 
+Before abandoning standardization, the full data set was used with K best selection = 4 (tried several otehr but 4 is still optimum), eigen solver, shinkage and standardization.
+
+ * LDA(eigen, auto, full, kbest = 4)       -Accuracy: 0.85173       Precision: 0.39910      Recall: 0.22150 F1: 0.28489     F2: 0.24314 
+ 
+ The results were below the best F1 score obtained without standardization (0.39280) and allow the conclusion that standardization is not a benifit for this classifier.
+ 
+Another attempeted preprocessing was principle component anlaysis, again using the full feature set and eigen/shinkage LDA. No other feature selection was completed but the number of 
+transformed components was varied.
+ * LDA(eigen, auto, full, PCA components = 1)  - Accuracy: 0.83547       Precision: 0.35375      Recall: 0.28300 F1: 0.31444     F2: 0.29479
+ * LDA(eigen, auto, full, PCA components = 4)  - Accuracy: 0.84553       Precision: 0.38924      Recall: 0.27850 F1: 0.32469     F2: 0.29530
+ * LDA(eigen, auto, full, PCA components = 10) - Accuracy: 0.83153       Precision: 0.34193      Recall: 0.28500 F1: 0.31088     F2: 0.29482
+ * LDA(eigen, auto, full, PCA components = 20) - Accuracy: 0.82473       Precision: 0.31467      Recall: 0.26700 F1: 0.28888     F2: 0.27534
+
+Again there is no improvement on select K best (k = 4), eigen solver and auto shinkage.
+
+Finally, in attempt to squeeze more perfomance out the best classifer achieved so far, the LDA classifer was fed as the base estimator for an ADA Boost ensemble classifer. This
+produced an error message as LDA is unable to support sample weighting required for ADA Bosst. Istead another ensembe method, bagging, was used with the optimal LDA classifer so far
+used as the base estimator.
+
+ * Bagging(base = LDA, skb = 4)                - Accuracy: 0.83300       Precision: 0.36605      Recall: 0.34500 F1: 0.35521     F2: 0.34901
+ * Bagging(base = LDA, no skb)                 - Accuracy: 0.79880       Precision: 0.29542      Recall: 0.36750 F1: 0.32754     F2: 0.35040
+
+This produced a respectable F1 score but it still lags behind the origional LDA classifier. Removing select K best further degrades the accuracy
+ 
+ 
 # Classifier Tuning
 ---
 
