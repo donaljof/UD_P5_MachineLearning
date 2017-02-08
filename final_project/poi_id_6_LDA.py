@@ -11,11 +11,9 @@ from sklearn.model_selection import train_test_split
 from time import time
 from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
 from sklearn import decomposition
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import make_pipeline
-#from sklearn.model_selection import GridSearchCV
-#from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.feature_selection import SelectKBest
+from sklearn.ensemble import BaggingClassifier
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -109,8 +107,8 @@ def feature_adder(data_dict):
     return data_dict
 
 #update data_dict as per above and add new features to feature list
-#data_dict = feature_adder(data_dict)
-#all_features = all_features + new_features
+data_dict = feature_adder(data_dict)
+all_features = all_features + new_features
 
 ### Store to my_dataset for easy export below.
 my_dataset = data_dict
@@ -121,9 +119,8 @@ my_dataset = data_dict
 #features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
 features_list = all_features
 
-
-print len(features_list)
-bad_features  =  ['restricted_stock_deferred', 'deferred_income']
+bad_features  =  ['restricted_stock_deferred', 'deferred_income'
+                  ,'from_poi_email_fraction ']
 
 for ft in bad_features:
     if ft in features_list:
@@ -150,18 +147,11 @@ print 'poi = ' ,  poi_count
 
 ######## Feature Reduction and Scaling ##########
     
-skb = SelectKBest(k=3)
-
-features = skb.fit_transform(features, labels)
-
-
+skb = SelectKBest(k=4)
 
 #Feature reduction step of pipeline
 #Start with example PCA from eigenfaces
-#pca = decomposition.PCA(random_state=44)
-
-#scaling data using MinMax scaler
-#skl = MinMaxScaler()
+#pca = decomposition.PCA(random_state=44, n_components = 20)
 
 #Stratified Shuffle Split for cross validation
 #sss = StratifiedShuffleSplit(random_state=44, test_size=0.3)
@@ -172,12 +162,22 @@ features_train, features_test, labels_train, labels_test = \
 #Linear discriminant Analysis
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-clf = LinearDiscriminantAnalysis(solver = 'eigen', shrinkage = 'auto')
+lda = LinearDiscriminantAnalysis(solver = 'eigen', shrinkage = 'auto')
+
+bag = BaggingClassifier(base_estimator = lda)
 
 t0 = time()
+
+clf = make_pipeline(bag)
+
 clf.fit(features_train, labels_train)
 
 pred = clf.predict(features_test)
+
+'''kbest loop
+for i in range(len(features_list ) -1):
+    print features_list[i+1], ' -- ', clf.named_steps['selectkbest'].scores_[i]
+'''
 
 pred_time = round((time() - t0), 4)
 
