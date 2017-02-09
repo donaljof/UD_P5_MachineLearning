@@ -7,36 +7,33 @@ Machine Learning Mini Project and Final Project
 # Introduction
 ---
 
-In August 23rd 2000 Enron stock hit a record high of $90 a share. 16 months later, on December 2nd 2001, the company declared Chapter 11 bankruptcy with the loss of over 4000 jobs[2]. 
-This classic case of corperate fraud is used as the basis Project 5 in the Udacity Data Science Nanodegree - Intro to Machine learning.
+In August 23rd 2000 Enron stock hit a record high of $90 a share. 16 months later, on December 2nd 2001, [the company declared Chapter 11 bankruptcy with the loss of over 4000 jobs](http://news.bbc.co.uk/1/hi/business/1759599.stm). 
+This classic case of corporate fraud is used as the basis Project 5 in the Udacity Data Science Nanodegree - Intro to Machine learning.
 
-The purpose of the project is to identify persons of interest (POI's) within the Enron email corpus (May 7th 2015 version used [2]) combined with publicly avialable pay and share data. 
+The purpose of the project is to identify persons of interest (POI's) within the Enron email corpus ([May 7th 2015 version used](https://www.cs.cmu.edu/~./enron/) ) combined with publicly avialable pay and share data. 
 For each of 145 the manually identified POI's/non-POI's a set of descriptive features is associated with the person giving either financial or email information on the person in question.
 Using this financial and email information the aim is to create a classifer capable of correctly identifying persons of interest in this data set that can be applied across the full enron corpus.
 
-In this project a machine learning classifer implemented using the Python package Scikit-Learn will be developed. The use of machine learning in this task allows a classification problem 
+In this project a machine learning classifer implemented using the Python package [Scikit-Learn](http://scikit-learn.org/) will be developed. The use of machine learning in this task allows a classification problem 
 such as this to be completed programmatically with far less human input than manual idenification  of POIs and in a fraction of the time. A variety of supervised machine learning classifiers
-have been applied including Nieve Bayes, Support Vector Machines and Ensenmble methods.
+have been applied including Nieve Bayes, Support Vector Machines, Linear Disciminant Analysis and Ensenmble methods.
 Naive Bayes was selected for its simplicity as an initial classifer and to get idea of an out of the box performance.
 Support vector machines classifier was used as it is a popular and well understood alghorith that works well with binary classification problems though the high feature count of this data set and low 
 number of POIs proved to be an issue. SVM does not work well with heavly skewed classification populations and this proved a problem.
 Random Forest classifer was used to take advantage of the high number of possible features in the dataset and to leverage the power of an ensemble method.
-Linear Discriminant Analysis classifer was used with shrinkage applied to deal with the low training points relative to possible features. Based on the success of Naive Bayes and the assumed
-covariance of the data features (especially in the financial data). 
+Linear Discriminant Analysis classifer was used with shrinkage applied to deal with the low training points relative to possible features.
 
 The data set provided contains 143 manually identified persons, if they are a person of interest (POI) or not (represente by a 1 or 0) and a selection of financial and emsil features shown below.
 
-financial features: ['salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees'] (all units are in US dollars)
+financial features: ['salary', 'deferral_payments', 'total_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred', 'deferred_income', 'total_stock_value', 'expenses', 'exercised_stock_options', 'other', 'long_term_incentive', 'restricted_stock', 'director_fees']
 
-email features: ['to_messages', 'email_address', 'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi'] (units are generally number of emails messages; notable exception is ‘email_address’, which is a text string)
+email features: ['to_messages', 'email_address', 'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi', 'shared_receipt_with_poi']
 
 There are a total of 146 data points of which 18 are identified as POI's and the rest are not.
 
 The main file for this project located in this repositry is poi_id.py  located in the final_project directory, this is the completed version of the classifier. 
 Multiple steps in the learning process and alternative classifiers have been saved in the format poi_id_X.py to record attempted classifiers (and revert in event of dead end).
 
-[1] http://news.bbc.co.uk/1/hi/business/1759599.stm
-[2] https://www.cs.cmu.edu/~./enron/
 
 # Data Features and Selection
 ---
@@ -48,9 +45,9 @@ POI's this feature was excluded for simplicity.
 For a simple check of the features provided the a feature_checker function of the poi_id_2_selection.py file was defined to loop through all features and count the number of non zero / non NaN item. 
 The feature 'loan_advances' provides 3 useful results with 2 non-poi. Based on this the Loan Advances feature is unlikey to be a useful at identifying POI's and was removed.
 
-A number of new features were created, mostly to represent payments of email counts as fractions of total and therefore scale the features more appropriatly. For example two employees
+A number of new features were created, mostly to represent payments of email counts as fractions of total and therefore scale the features more appropriately. For example two employees
 that excercise $100,000 worth of their shares might apprear similar in the 'exercised_stock_options' feature but if one employee had $200,000 total stock and the other had $4,000,000 in stock these 
-sales of shares would not seem as equivelent. Creating reatio features for some of key financial features of each data point reduces the 
+sales of shares would not seem as equivalent. Creating ratio features for some of key financial features of each data point reduces impact of outlier and introduces a degree of scaling to the featues.
 
 List of added features:
 'exercised_stock_ratio' = Fraction of excercised from total unrestricted stock available to excersise (not fully sure if deferred restircted stock should also be subtracted from this as not clear about the differnces between these)
@@ -59,25 +56,60 @@ List of added features:
 'total_bonus_compensation' = Combined bonus, fees, expenses and otehr benifits that are not part of base salary. Other may belong in her but unsure.
 'salary_fraction_total_bonus' = Above metric as fraction of salary (this may be > 1 ).
 
-Further reduction of the dataset dimensionality was completed using PCA (Principle Component Analysis), employed as part of a pipeline. A breakdown of the top components calculated by PCA was printed out
+For the final classifer, feature selection was completed using SelectKBest with k = 4. The optimal feature number was determined by trial and error 
+
+By looping through the K best F scores it was seen that the best feature (by this metric) is "exercised_stock_options". 
+
+Seleck K Best Scorec (ANOVA F - values)
+
+|Features|F score|
+| -------------------------- | :-------: |
+| salary|    19.7903943832|
+| deferral_payments          |    1.04233627397 |
+| total_payments             |    9.64411359811 |
+| bonus                      |    10.6430154732 |
+| total_stock_value           |   25.5121582709 |
+| expenses                    |   7.72689807011 |
+| exercised_stock_options     |   25.9894214301 |
+| other                        |  7.94119255974 |
+| long_term_incentive         |   17.2253598825 |
+| restricted_stock            |   10.103322706 |
+| director_fees               |   1.65726925903 |
+| to_messages                 |   0.130241166893 |
+| from_poi_to_this_person     |   0.0939291393021 |
+| from_messages               |   0.0220145818701 | 
+| from_this_person_to_poi     |   1.94142663375 |
+| shared_receipt_with_poi    |    2.35776785893 |
+| exercised_stock_ratio     |     0.0263590242677 |
+| to_poi_email_fraction    |      0.135172413793 |
+| from_poi_email_fraction      |  nan |
+| total_bonus_compensation     |  8.07329192324 |
+| salary_fraction_total_bonus |   0.0241660636938 |
+
+Post analysis above 'from_poi_email_fraction' was removed from the features as it is not operating as expected and appears to return the same value every time.
+
+Though unused in the final classifer dimensionality reduction was completed using PCA (Principle Component Analysis). A breakdown of the top components calculated by PCA was printed out
 from the data set based on their explained variance:
-1  explained var =   0.871364222652
-2  explained var =   0.0957615880701
-3  explained var =   0.0126077469676
-4  explained var =   0.0108225652873
-5  explained var =   0.00478163091311
+
+1. explained var =   0.871364222652 
+2. explained var =   0.0957615880701 
+3. explained var =   0.0126077469676 
+4. explained var =   0.0108225652873
+5. explained var =   0.00478163091311 
 
 From this we can see the first component accounts for the vast majority of variance in the dataset post transformation and the number of potentially useful dimensions reduced to more managable number.
 
-Sclaing of features was added at a later stage in the project process and included as the first step in the pipleine but no noticible improvement in performance was see, possibly due to the 
-inclusion of ratio based features added to the feature set that were then included in the PCA.
+Sclaing of features was attempted using both Standardization and MinMaxScaling but there was either no performance improvement of a decrease in performance.
 
 # Outlier Removal
 ---
 
-From the Feature Selection module of the MD course an initial outlier was identified as 'TOTALS' and removed from the dataset. Further investigation using the key_checker function defined in poi_id_2_selection.py 
-found a name 'LOCKHART EUGENE E' had no features with a non-0 or non-NaN result and so was scrubbed. Looking at the number of non-0/NaN features returned for each data point
+From the Feature Selection module of the Udacity Machine Learning course an initial outlier was identified as 'TOTALS' and removed from the dataset. Further investigation using the key_checker function defined in poi_id_2_selection.py 
+found a name 'LOCKHART EUGENE E' had no features with a non-0 or non-NaN result and so was scrubbed. 
+
+Looking at the number of non-0/NaN features returned for each data point
 showed a 'THE TRAVEL AGENCY IN THE PARK' with only 3 useful features and a name that suggests it is not a person, let a alone a POI. This data point was removed as part of the initial data checking.
+
 This initial outlier scrub improved the F1 score of the an out of the box Guassian Naive Bayes classifer from 0.09 (subset of features used as per poi_id_1_simple) to 0.57 with the majority of
 this benifit coming from the removal of 'TOTALS'
 
@@ -376,36 +408,8 @@ With all 4 selected the resultant F1 score is the same, which makes sense.
  * LDA(eigen, auto, full, kbest = 15)         - Accuracy: 0.77173       Precision: 0.27136      Recall: 0.42250 F1: 0.33047     F2: 0.38015
  * LDA(eigen, auto, full, kbest = 20)         - Accuracy: 0.73340       Precision: 0.25303      Recall: 0.51200 F1: 0.33868     F2: 0.42500
  
-For the full feature set and k = 1, there is a small increase in F1 score over the manaually selected features meaning the best possible predictive feature was not included. 
-By looping through the K best F scores it can be seen that the best feature (by this metric) is "exercised_stock_options". By trying multiple k numbers the impact of increased features can be
-seen with a initial increase in F1 score followed by a reduction as a result of reduced precision. Its possible as that more features are added to the classifer the decision boundries 
-become more complex and tend towards overfitting to the data resulting in an increase in false positives. The best possible K value was found by running with multiple k values and slecting 
-the best result (k = 4).
-
-Seleck K Best Scorec (ANOVA F - values)
-salary                       --  19.7903943832
-deferral_payments            --  1.04233627397
-total_payments               --  9.64411359811
-bonus                        --  10.6430154732
-total_stock_value            --  25.5121582709
-expenses                     --  7.72689807011
-exercised_stock_options      --  25.9894214301
-other                        --  7.94119255974
-long_term_incentive          --  17.2253598825
-restricted_stock             --  10.103322706
-director_fees                --  1.65726925903
-to_messages                  --  0.130241166893
-from_poi_to_this_person      --  0.0939291393021
-from_messages                --  0.0220145818701
-from_this_person_to_poi      --  1.94142663375
-shared_receipt_with_poi      --  2.35776785893
-exercised_stock_ratio        --  0.0263590242677
-to_poi_email_fraction        --  0.135172413793
-from_poi_email_fraction      --  nan
-total_bonus_compensation     --  8.07329192324
-salary_fraction_total_bonus  --  0.0241660636938
-
-Post analysis above 'from_poi_email_fraction' was removed from the features as it is not operating as expected and appears to return the same value every time.
+By trying multiple k numbers the impact of increased features can be seen with a initial increase in F1 score followed by a reduction as a result of reduced precision. Its possible as that more features are added to the classifer the decision boundries 
+become more complex and tend towards overfitting to the data resulting in an increase in false positives. The best possible K value was found by running with multiple k values and slecting the best result (k = 4).
 
 As well as feature selection, scaling the features is another preprocessing step to be considered. This is especially important for classifers such as LDA taht are expectign normally distributed
 data as an imput. For this reason a standard scaler was introduced to give a more normal traning dataset for the classifer to fit on.
