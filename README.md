@@ -509,6 +509,28 @@ artificially long running classifiers (user defined fit times) to give a metric 
 # Results and Testing
 --- 
 
+starting size 146
+deleted:  LOCKHART EUGENE E
+deleted:  THE TRAVEL AGENCY IN THE PARK
+deleted:  TOTAL
+deleted:  restricted_stock_deferred
+deleted:  deferred_income
+No of features uses =  22
+my_dataset size =  143
+poi =  18
+Total Fit/Pred Time =  0.0
+Classifier Accurcacy =  0.813953488372
+Classifier Precision =  0.25
+Classifier Recall =  0.166666666667
+Classifier False Positive Prob =  0.375
+Classifier F1 Score =  0.2
+Speed Weighted F1 Score =  0.2
+
+Pipeline(steps=[('selectkbest', SelectKBest(k=4, score_func=<function f_classif at 0x000000000D11A978>)), ('lineardiscriminantanalysis', LinearDiscriminantAnalysis(n_components=None, priors=None, shrinkage='auto',
+              solver='eigen', store_covariance=False, tol=0.0001))])
+        Accuracy: 0.83367       Precision: 0.38265      Recall: 0.40350 F1: 0.39280     F2: 0.39915
+        Total predictions: 15000        True positives:  807    False positives: 1302   False negatives: 1193   True negatives: 11698
+
 # Conclusion
 ---
 

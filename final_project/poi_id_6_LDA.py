@@ -9,11 +9,9 @@ from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.model_selection import train_test_split
 from time import time
-from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score,classification_report
-from sklearn import decomposition
+from sklearn.metrics import accuracy_score, precision_score, recall_score,f1_score
 from sklearn.pipeline import make_pipeline
 from sklearn.feature_selection import SelectKBest
-from sklearn.ensemble import BaggingClassifier
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -115,13 +113,14 @@ my_dataset = data_dict
 
 ### Extract features and labels from dataset for local testing
 
-#Strating with manually chosen feature set
-#features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
+#Selecting all features initiall with Select K Best used later to trip this.
 features_list = all_features
 
 bad_features  =  ['restricted_stock_deferred', 'deferred_income'
                   ,'from_poi_email_fraction ']
 
+#Removing features that have caused problems in LDA classifers due to either
+#negitive number, sparseness or lack of uniqueness
 for ft in bad_features:
     if ft in features_list:
         features_list.remove(ft)
@@ -129,9 +128,11 @@ for ft in bad_features:
         
 print 'No of features uses = ', len(features_list)        
 
+#Forming into array for clasification. NaN changed to 0, all 0 features removed.
 data_noNaNnoZero = featureFormat(my_dataset, features_list, sort_keys = True,\
 remove_NaN=True, remove_all_zeroes=True, remove_any_zeroes=False)
 
+#Target feature split to seperate features from labels
 labels, features = targetFeatureSplit(data_noNaNnoZero)
 
 #how many poi in my_dataset?:
@@ -146,35 +147,28 @@ print 'poi = ' ,  poi_count
 ### http://scikit-learn.org/stable/modules/pipeline.html
 
 ######## Feature Reduction and Scaling ##########
-    
+
+#Kbest feature selection, k=4 gives best results after multile trials.    
 skb = SelectKBest(k=4)
 
-#Feature reduction step of pipeline
-#Start with example PCA from eigenfaces
-#pca = decomposition.PCA(random_state=44, n_components = 20)
-
-#Stratified Shuffle Split for cross validation
-#sss = StratifiedShuffleSplit(random_state=44, test_size=0.3)
-
+#Splitting data into training and testing sets.
 features_train, features_test, labels_train, labels_test = \
     train_test_split(features, labels, test_size=0.3,random_state=4)
 
-#Linear discriminant Analysis
+#Linear discriminant Analysis Classifer
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 lda = LinearDiscriminantAnalysis(solver = 'eigen', shrinkage = 'auto')
 
-bag = BaggingClassifier(base_estimator = lda)
-
 t0 = time()
 
-clf = make_pipeline(bag)
+clf = make_pipeline(skb,lda)
 
 clf.fit(features_train, labels_train)
 
 pred = clf.predict(features_test)
 
-'''kbest loop
+'''#kbest loop to produce F scores for all variables. 
 for i in range(len(features_list ) -1):
     print features_list[i+1], ' -- ', clf.named_steps['selectkbest'].scores_[i]
 '''
@@ -190,36 +184,6 @@ print 'Total Fit/Pred Time = ', pred_time
 ### stratified shuffle split cross validation. For more info: 
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-''' # Not used but leaving in case of future PCA / pipe use.
-# pipe parameters 
-n_components = [2,4,6, 10, 13,15,19]
-
-
-#### Pipeline:
-t0 = time()
-pipe = make_pipeline(skl,pca,clf)
-
-
-estimator = GridSearchCV(pipe, 
-                         dict(pca__n_components=n_components,
-                              randomforestclassifier__n_estimators=n_estimators,
-                              randomforestclassifier__min_samples_leaf=leaf_size,
-                              randomforestclassifier__max_features=m_ft,
-                              randomforestclassifier__max_depth=max_depth,
-                              randomforestclassifier__criterion=citerion),
-                              cv = sss, scoring = 'f1')
-
-#Fitting the grid search estimator
-estimator.fit(features, labels)
-
-print 'Best Est = ', estimator.best_estimator_
-#assigning to clf for tester.py
-
-pipe_time = round((time() - t0), 4)
-print "\n Total Pipeline Time = ", pipe_time , "\n"
-
-print "Best GridSearch F1 Score = ", estimator.best_score_
-''' 
 
 
 #Custom slightly pointless metric 
