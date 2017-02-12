@@ -1,0 +1,6 @@
+http://news.bbc.co.uk/1/hi/business/1759599.stm
+http://scikit-learn.org/
+https://www.cs.cmu.edu/~./enron/
+http://stats.stackexchange.com/questions/63565/good-classifiers-for-small-training-sets
+https://discussions.udacity.com/t/beating-naive-bayes/216595/5
+https://discussions.udacity.com/t/featureformat-returning-inconsistent-results-dont-understand-why/209439/2
