@@ -116,9 +116,13 @@ this benifit coming from the removal of 'TOTALS'
 
 # Classifiers
 ---
-### Nieve Bayes
+### Naive Bayes
 
-OOB Nieve Bayes
+As a starting point the out of the box Gaussian Naive Bayes using a manually selected feature set. The results of the tester.py script show a high precision but the classifier is let down by the recall score of 0.28 suggesting Naive Bayes struggling to correctly locate all the POI's in the data set.
+
+```
+features_list = ['poi','salary','total_stock_value','exercised_stock_options','expenses']
+
 Classifier Fit Time =  0.0
 Classifier Predict Time =  0.0
 Classifier Accurcacy =  0.857142857143
@@ -127,6 +131,11 @@ Classifier Recall =  0.666666666667
 Classifier False Positive Rate =  0.666666666667
 Classifier F1 Score =  0.571428571429
 Speed Weighted F1 Score =  0.535714285714
+
+GaussianNB(priors=None)
+        Accuracy: 0.85800       Precision: 0.50535      Recall: 0.28350 F1: 0.36323     F2: 0.31079
+        Total predictions: 14000        True positives:  567    False positives:  555   False negatives: 1433   True negatives: 11445
+```
 
 ### Support Vector Machines
 
@@ -145,13 +154,14 @@ Multiple attempts were made to create a SVM classifier using the RBF kernal but 
 The difficulties in tuning this algorithm and the poor results achieved resulted in it being abandoned for futher explorations. Intuition would suggest that removing PCA from the pipeline would reduce the efffectivness of SVM due to the increased number of hyperplanes divisions needed but changing the 
 method of feature reduction may be useful. The scaling of the features used may also have been an issue though PCA and the creation of ratio based features should have alleviated this. 
 
+```
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=3, whiten=False)), ('linearsvc', LinearSVC(C=50000, class_weight=None, dual=True, fit_intercept=True,
      intercept_scaling=1, loss='squared_hinge', max_iter=10000,
      multi_class='ovr', penalty='l2', random_state=None, tol=8e-05,
      verbose=0))])
 
  Total Pipeline Time =  44.46 
-
+ 
              precision    recall  f1-score   support
 
     Non-POI       0.93      0.74      0.82        38
@@ -165,27 +175,28 @@ Classifier Recall =  0.6
 Classifier False Positive Prob =  0.833333333333
 Classifier F1 Score =  0.333333333333
 Speed Weighted F1 Score =  0.333333333333
- 
+```
 
 ### Decision Trees
 
 
 
 Out of Box:
+```
 Classifier Accurcacy =  0.906976744186
 Classifier Precision =  1.0
 Classifier Recall =  0.2
 Classifier False Positive Prob =  0.0
 Classifier F1 Score =  0.333333333333
 Speed Weighted F1 Score =  0.333333333333
-
+```
 With PCA and GridselctCV looping over possible values for 'n_components', 'n_estimators', 'max_features', 'min_samples_leaf' and 'max_depth'. Unlike previous classifers above, the mistake in the
 Speed Weighted F1 Score was fixed and it is giving a reduced F1 score for this slower alghorith (subjective measure but sclaled to penalize when the metric creator is getting impatient).
 
 Annoyingly, due to the random nature of the Random Forest Classifier the high score below is not repeatabe. Running tester code on below produced an poor F1 score of 0.22. 
 Either the variation in the features selected by random forest created "lucky" classifer or its possible the series of POI's selected by the classifer fitted to correct results by pure
 
-
+```
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=15, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
             max_depth=5, max_features=0.08, max_leaf_nodes=None,
             min_samples_leaf=1, min_samples_split=2,
@@ -202,22 +213,19 @@ Best Est =  Pipeline(steps=[('pca', PCA(copy=True, n_components=15, whiten=False
 
 avg / total       0.96      0.95      0.95        43
 
-[ 0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
-  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  1.  0.  0.  0.  0.  0.
-  1.  0.  0.  0.  0.  0.  0.]
 Classifier Accurcacy =  0.953488372093
 Classifier Precision =  1.0
 Classifier Recall =  0.6
 Classifier False Positive Prob =  0.0
 Classifier F1 Score =  0.75
 Speed Weighted F1 Score =  0.464092184753
-
+```
 
 After some frustration with the mediocre effectivness of the random forest classifiers (and on suggestion from the forums), the scoring parameter was uptated to 'f1' and 
 StratifiedShuffleSplit used as cross validation.
 
 Running an out of box Random Forest Classifier, searching over PCA n_components gives a F1 score of 0.36, an improvement to the origional OOB result of 0.33.
-
+```
 Best Est =  Pipeline(steps=[('pca', PCA(copy=True, iterated_power='auto', n_components=10, random_state=None,
   svd_solver='auto', tol=0.0, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
             max_depth=None, max_features='auto', max_leaf_node...stimators=10, n_jobs=1, oob_score=False, random_state=41,
@@ -238,21 +246,21 @@ Classifier Recall =  0.333333333333
 Classifier False Positive Prob =  0.428571428571
 Classifier F1 Score =  0.363636363636
 Speed Weighted F1 Score =  0.359474904232 
-
+```
 To further boost the preformace of the classifier, skaling was introduced using a MinMax scaler with default settings. The reasoning being that some of the financial components were producing
 incorrect splitting of the dataset as part of the tree generation and causing extremem overfitting along some of the decision trees used.
 A wide search of possible tunign parameters was used in an effort to seek out the optimum parameters for the classifer though this resulted in a huge runtime.
-
+```
 citerion = ["gini", "entropy"]
 n_estimators  = [5,10, 15, 20, 30, 40]
 max_features = [0.01,0.03,0.04,0.08,0.1,0.15,0.23, 0.4]
 max_split = [2,3,4,6,10, 20]
 min_samples_leaf = [1,2,4,6]
 max_depth = [5,10,None]
-
+```
 The best estimate classifier produced a F1 score of 0.38 using the stratified shuffle split data in grid search and an even less impressive 0.25 when fitted sperately to a train test split data that was 
 used to calculate the custom metric produced.
-
+```
 Best Est =  Pipeline(steps=[('minmaxscaler', MinMaxScaler(copy=True, feature_range=(0, 1))), ('pca', PCA(copy=True, iterated_power='auto', n_components=19, random_state=44,
   svd_solver='auto', tol=0.0, whiten=False)), ('randomforestclassifier', RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',...stimators=20, n_jobs=1, oob_score=False, random_state=44,
             verbose=0, warm_start=False))])
@@ -266,12 +274,12 @@ Classifier Recall =  0.166666666667
 Classifier False Positive Prob =  0.166666666667
 Classifier F1 Score =  0.25
 Speed Weighted F1 Score =  8.14832365651e-17
-
+```
 Running tester.py resulted in a abismal 0.18 and failled to meet the passing criterion.
-
+```
 Accuracy: 0.85747       Precision: 0.38725      Recall: 0.11850 F1: 0.18147     F2: 0.13760
         Total predictions: 15000        True positives:  237    False positives:  375   False negatives: 1763   True negatives: 12625
-
+```
 Again a more complex classifier has come nowhere near the results achieved by an OOB Naive Bayes classifer despite extensive grid search, scaling, PCA and more intensive cross validation.
 At this point, given there has been no significant increase in classifer performance I decided to abandon Random Forest Classifers as a possible final classifer.
 
@@ -299,13 +307,10 @@ In the above section, I outlined several possible reasons for poor classifer per
 transformation or tuning is responsible, all 3 were tested using the same code for everthing but assigning the classifier (clf = ...). The base out of box parameters were unchanged and the tester.py 
 script ran on each of the resultant classifers. 
 
-In addition to the classifers attempted already, a new classifer was added - Linear Discriminant Analysis. This classifier was chosen as result of some searching for classifers that work
-well with small datasets and a larger number of features. More detailed investigation of the use of Discriminant Analysis and reading the sklearn documentation suggests it works well with
+In addition to the classifers attempted already, a new classifer was added - Linear Discriminant Analysis. [This classifier was chosen as result of some searching for classifers that work
+well with small datasets and a larger number of features](http://stats.stackexchange.com/questions/63565/good-classifiers-for-small-training-sets). More detailed investigation of the use of Discriminant Analysis and reading the sklearn documentation suggests it works well with
 multicollinearity, requires limited tuning and works under simlilar mathematical principles to the best classifer so far, Guassian Naive Bayes (based on Bayes rule and assumes multivariate normal distribution). 
-
-
-http://stats.stackexchange.com/questions/63565/good-classifiers-for-small-training-sets
-		
+```
 GaussianNB(priors=None)
         Accuracy: 0.85800       Precision: 0.50535      Recall: 0.28350 F1: 0.36323     F2: 0.31079
         Total predictions: 14000        True positives:  567    False positives:  555   False negatives: 1433   True negatives: 11445
@@ -323,13 +328,15 @@ RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
             verbose=0, warm_start=False)
         Accuracy: 0.84529       Precision: 0.41354      Recall: 0.19850 F1: 0.26824     F2: 0.22154
         Total predictions: 14000        True positives:  397    False positives:  563   False negatives: 1603   True negatives: 11437
-
-Got a divide by zero when trying out: SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+```
+Got a divide by zero when trying out: 
+```
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma='auto', kernel='rbf',
   max_iter=-1, probability=False, random_state=None, shrinking=True,
   tol=0.001, verbose=False)
 Precision or recall may be undefined due to a lack of true positive predicitons.
-
+```
 From the results above the performace of LDA is similar to Naive Bayes with better precision but an overall lower F1 score. 
 The Random Forest is not as effective but it can be noted
 this is a better result than the 2 hour PCA/GridSearchCV attempt in the last section. This suggests there was issues with feature selection/reduction or tuning of the Random Forests used previously though
@@ -459,18 +466,12 @@ This produced a respectable F1 score but it still lags behind the origional LDA 
 # Classifier Tuning
 ---
 
-Though many of the machine learning classifiers featured have some predictive value out of the box, maximizing their effectiveness can be achieved by tuning the key parameters used.
+Though many of the machine learning classifiers featured have some predictive value out of the box, maximizing their effectiveness can be achieved by tuning the key parameters used. In the final classifer used (Linear Discriminant Analysis), limited tuning could be completed beyond changing the solver used or the number of features used. This impact of this tuning is detailed above.
 
-For tuning of the classifers, GridselctCV was used to try a range of possible tuning parameters and select the best possible classifier.
+For tuning of the other classifers, GridselctCV was used to try a range of possible tuning parameters and select the best possible classifier. For support vector machines the tuning parameters used were C, gamma, stopping critereon tolerence and maximum iterations. For Random Forest Classifers the parameters tuned were Number of Estimators, Min samples per leaf, maximum features used per split, the max tree depth and the split critereon.
 
-Cross validation was also included as part of the GridSelectCV 
-
-SVM grid:
-n_components = [1,2,3,4]
-C_values = [40000, 50000,60000,70000]
-tol_values = [0.0001,0.00008, 0.00005,0.00003]
-iter_values = [10,100,1000,10000]
-ic_scl= [1,2,3,4,5]
+Cross validation was also included as part of the GridSelectCV, initially using a varying number of folds but later switching to Stratified Shuffle Split. Cross validation is essential as part of a pipeline including a Grid Select parameter search to ensure the combinations tested can be tested for the optimal combination on a subset of the data used in the pipeline. Cross valaidation is required to ensure seperation between the data used to train the classifier with each parameter combination and the data used to test the effectiveness of the parameter set. Without cross validation the same data would be used to train and test each parameter set would be the same resulting with potential overfitting using the parameters selected.
+For the final classifer, train test split was used for cross validation with a 30% of the data used for testing. Seperating the test adn train data out is essential to ensuring the classifier metrics produced are reliable.
 
 
 # Classifier Metrics
@@ -509,6 +510,8 @@ artificially long running classifiers (user defined fit times) to give a metric 
 # Results and Testing
 --- 
 
+The result for the final classifer chosen (Linear Discriminant Analysis using the eigen solver and select K best) is shown below. The F1 score for this classifer when running tester.py is 0.39 with a precision of 0.38 and a recall of 0.40. 
+```
 starting size 146
 deleted:  LOCKHART EUGENE E
 deleted:  THE TRAVEL AGENCY IN THE PARK
@@ -530,7 +533,17 @@ Pipeline(steps=[('selectkbest', SelectKBest(k=4, score_func=<function f_classif 
               solver='eigen', store_covariance=False, tol=0.0001))])
         Accuracy: 0.83367       Precision: 0.38265      Recall: 0.40350 F1: 0.39280     F2: 0.39915
         Total predictions: 15000        True positives:  807    False positives: 1302   False negatives: 1193   True negatives: 11698
+```
+
 
 # Conclusion
 ---
+
+Overall the best classifer found for this data set was Linear Discriminant Analysis with Eigenvalue decomposition as the solver and automatic shrinkage applied. Though not critical for an LDA classifer, classifer tuning is important for optimizing the performance of the classifer and ensuring the best response for the dataset in question. This is especially important for decision tree based classifiers such as random forest classifer to prevent overfitting.
+
+Applying more advanced preprocessing such as PCA was not effective at increasing the performance of the classifier and neither was attempting to boost the classifier using ensemble methods. Only a small subset of the features available (4 of the potential 22 including created features) are used in the final classifer with further features decreasing the effectivness of the classifer. The features used were exercised_stock_options, total_stock_value, long_term_incentive and bonus. Similarly applying feature scaling to the data did not improve the classifier performance though this was in contrast to the expected result of addign scaling.
+
+In conclusion  it was found that more complex classifers do not always produce the best results. Much time was spent tuning and modifying the Support Vector Machine and Random Forest classifers with limited result. A key learning for nay future machine learning project would be to start simple and apply each new pre-processing step and feature carefully adn one at a time. Applying to many techniques all at one without carefully analysing the impact makes it difficult to understand where the loss of classifier performance is coming.
+
+
 
