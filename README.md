@@ -14,7 +14,7 @@ The purpose of the project is to identify persons of interest (POI's) within the
 For each of 145 the manually identified POI's/non-POI's a set of descriptive features is associated with the person giving either financial or email information on the person in question.
 Using this financial and email information the aim is to create a classifer capable of correctly identifying persons of interest in this data set that can be applied across the full enron corpus.
 
-In this project a machine learning classifer implemented using the Python package [Scikit-Learn](http://scikit-learn.org/) will be developed. The use of machine learning in this task allows a classification problem 
+In this project a machine learning classifer implemented using the Python package [Scikit-Learn](http://scikit-learn.org/) will be developed and a machine learning classifier using Linear Discriminant Analysis deployed. The use of machine learning in this task allows a classification problem 
 such as this to be completed programmatically with far less human input than manual idenification  of POIs and in a fraction of the time. A variety of supervised machine learning classifiers
 have been applied including Nieve Bayes, Support Vector Machines, Linear Disciminant Analysis and Ensenmble methods.
 Naive Bayes was selected for its simplicity as an initial classifer and to get idea of an out of the box performance.
@@ -468,16 +468,19 @@ This produced a respectable F1 score but it still lags behind the origional LDA 
 
 Though many of the machine learning classifiers featured have some predictive value out of the box, maximizing their effectiveness can be achieved by tuning the key parameters used. In the final classifer used (Linear Discriminant Analysis), limited tuning could be completed beyond changing the solver used or the number of features used. This impact of this tuning is detailed above.
 
-For tuning of the other classifers, GridselctCV was used to try a range of possible tuning parameters and select the best possible classifier. For support vector machines the tuning parameters used were C, gamma, stopping critereon tolerence and maximum iterations. For Random Forest Classifers the parameters tuned were Number of Estimators, Min samples per leaf, maximum features used per split, the max tree depth and the split critereon.
+For tuning of the other classifers (not used in final classifer), GridselctCV was used to try a range of possible tuning parameters and select the best possible classifier. For support vector machines the tuning parameters used were C, gamma, stopping critereon tolerence and maximum iterations. For Random Forest Classifers the parameters tuned were Number of Estimators, Min samples per leaf, maximum features used per split, the max tree depth and the split critereon.
 
-Cross validation was also included as part of the GridSelectCV, initially using a varying number of folds but later switching to Stratified Shuffle Split. Cross validation is essential as part of a pipeline including a Grid Select parameter search to ensure the combinations tested can be tested for the optimal combination on a subset of the data used in the pipeline. Cross valaidation is required to ensure seperation between the data used to train the classifier with each parameter combination and the data used to test the effectiveness of the parameter set. Without cross validation the same data would be used to train and test each parameter set would be the same resulting with potential overfitting using the parameters selected.
+Stratified Shuffle Split was not used in the final classifer as the simplicity of of LDA and the lack of use of a parameter search did not require a more complex cross validation than a simple train test split. 
+For the classifiers using GridSelectCV, cross validation was included as part of the GridSelectCV, initially using a varying number of folds but later switching to Stratified Shuffle Split. Cross validation is essential as part of a pipeline including a Grid Select parameter search to ensure the combinations tested can be tested for the optimal combination on a subset of the data used in the pipeline. Cross valaidation is required to ensure seperation between the data used to train the classifier with each parameter combination and the data used to test the effectiveness of the parameter set. Without cross validation the same data would be used to train and test each parameter set would be the same resulting with potential overfitting using the parameters selected.
 For the final classifer, train test split was used for cross validation with a 30% of the data used for testing. Seperating the test adn train data out is essential to ensuring the classifier metrics produced are reliable.
 
 
 # Classifier Metrics
 ---
 
-The core metrics used to quantify the quality of the classifiers investigated in this project were the accuracy, precision and recall. 
+The core metrics used to quantify the quality of the classifiers investigated in this project were the accuracy, precision and recall.
+
+Precision is the ratio of true positives to total positively identified by the classifer and reflects the ability of the classifer to not incorrectly lablel a negative sample as positive. Recall is the ratio of true positives to the total true positives and false positives (total correctly classifierd points) and reflects the ability of the classifer to locate all of the positive samples.
 
 In addition to these the harmonic mean of precision and recall, the F1 score, was used to look at the combined ability of the classifers to identify POI's (recall) and to not identify false positives (precision).
 Custom funtions were defined to further explore the classifiers effectiveness. Using Bayes rule a calculation for the probability of a Positive result being a valid True POI and the probability
@@ -507,6 +510,7 @@ Expodential chosen not for any sound mathematical reasons but to ensure a 0 valu
 artificially long running classifiers (user defined fit times) to give a metric that will only penalize noticably glacial classifiers.
 
 
+
 # Results and Testing
 --- 
 
@@ -534,7 +538,7 @@ Pipeline(steps=[('selectkbest', SelectKBest(k=4, score_func=<function f_classif 
         Accuracy: 0.83367       Precision: 0.38265      Recall: 0.40350 F1: 0.39280     F2: 0.39915
         Total predictions: 15000        True positives:  807    False positives: 1302   False negatives: 1193   True negatives: 11698
 ```
-
+The final classifer results in a high accuracy of 83% though given the small number of POI's relative to total points in the dataset this is not a great reflection of the classifier performance. The overall F1 score of 0.39 is based on equal parts precision and recall with only a small difference  between these metrics. This shows the classifer is not stongly weighted towards locating all true positives of avoiding incorrect classification. This balance doesn't point towards any weakness of the classifier though the overall F1 score is not particularly good. This may be as a result of the a difficult and small dataset with a low number of possible true positives. Its also possible that a stonger classifer exists that was simply not found and explored by this porject.
 
 # Conclusion
 ---
